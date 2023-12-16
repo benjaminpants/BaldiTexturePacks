@@ -5,7 +5,7 @@ using BepInEx;
 using MTM101BaldAPI;
 using MTM101BaldAPI.OptionsAPI;
 using MTM101BaldAPI.Registers;
-using MTM101BaldAPI.AssetManager;
+using MTM101BaldAPI.AssetTools;
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine.Rendering;
@@ -33,7 +33,7 @@ namespace BaldiTexturePacks
             "LightMap"
         };
         public static TPPlugin Instance;
-        public string packRootFolder => AssetManager.GetModPath(this);
+        public string packRootFolder => AssetLoader.GetModPath(this);
         public string packFolder => Path.Combine(packRootFolder, "Texture Packs");
         public string basePackPath => Path.Combine(packFolder, "core");
         public Dictionary<string, TexturePack> packs = new Dictionary<string, TexturePack>();

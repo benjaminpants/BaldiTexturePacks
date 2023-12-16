@@ -6,7 +6,7 @@ using UnityEngine;
 using System.IO;
 using HarmonyLib;
 using System.Linq;
-using MTM101BaldAPI.AssetManager;
+using MTM101BaldAPI.AssetTools;
 using System.Reflection;
 using MonoMod.Utils;
 using AlmostEngine;
@@ -115,7 +115,7 @@ namespace BaldiTexturePacks
             for (int i = 0; i < pngs.Length; i++)
             {
                 Texture2D targetTex = TPPlugin.Instance.allTextures.Where(x => x.name == Path.GetFileNameWithoutExtension(pngs[i])).First();
-                Texture2D generatedTex = AssetManager.AttemptConvertTo(AssetManager.TextureFromFile(pngs[i]), targetTex.format);
+                Texture2D generatedTex = AssetLoader.AttemptConvertTo(AssetLoader.TextureFromFile(pngs[i]), targetTex.format);
                 generatedTex.name = Path.GetFileName(filePath) + "_" + generatedTex.name;
                 textures.Add(targetTex.GetHashCode(), generatedTex);
             }
@@ -136,7 +136,7 @@ namespace BaldiTexturePacks
             string[] sounds = Directory.GetFiles(Path.Combine(filePath, "Audio"));
             for (int i = 0; i < sounds.Length; i++)
             {
-                AudioClip clip = AssetManager.AudioClipFromFile(sounds[i]);
+                AudioClip clip = AssetLoader.AudioClipFromFile(sounds[i]);
                 clipsToReplace.Add(allclips.Where(x => x.name == Path.GetFileNameWithoutExtension(sounds[i])).First(), clip);
             }
         }
@@ -148,7 +148,7 @@ namespace BaldiTexturePacks
             for (int i = 0; i < mids.Length; i++)
             {
                 string targetMidi = Path.GetFileNameWithoutExtension(mids[i]);
-                midiOverrides.Add(targetMidi, AssetManager.MidiFromFile(mids[i], internalName + "_" + Path.GetFileNameWithoutExtension(targetMidi)));
+                midiOverrides.Add(targetMidi, AssetLoader.MidiFromFile(mids[i], internalName + "_" + Path.GetFileNameWithoutExtension(targetMidi)));
             }
         }
 
