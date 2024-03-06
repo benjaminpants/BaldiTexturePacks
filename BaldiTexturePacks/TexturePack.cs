@@ -10,6 +10,7 @@ using MTM101BaldAPI.AssetTools;
 using System.Reflection;
 using MonoMod.Utils;
 using AlmostEngine;
+using MTM101BaldAPI;
 
 namespace BaldiTexturePacks
 {
@@ -46,7 +47,14 @@ namespace BaldiTexturePacks
             {
                 foreach (KeyValuePair<int, Texture2D> kvp in textures)
                 {
-                    Graphics.CopyTexture(kvp.Value, TPPlugin.Instance.allTextures.Where(x => x.GetHashCode() == kvp.Key).First());
+                    try
+                    {
+                        Graphics.CopyTexture(kvp.Value, TPPlugin.Instance.allTextures.Where(x => x.GetHashCode() == kvp.Key).First());
+                    }
+                    catch (Exception)
+                    {
+                        throw new TexturePackLoadException(this, "Failed to load/copy " + kvp.Value.name + "!");
+                    }
                 }
                 TPPlugin.Log.LogDebug(String.Format("[{0}] Copied {1} textures.", Name, textures.Count));
             }
@@ -111,10 +119,17 @@ namespace BaldiTexturePacks
         public void LoadTextures()
         {
             if (!Directory.Exists(Path.Combine(filePath, "Textures"))) return;
+            if (TPPlugin.Instance.allTextures.Length == 0) throw new Exception("allTextures is of length 0!");
             string[] pngs = Directory.GetFiles(Path.Combine(filePath, "Textures"), "*.png");
             for (int i = 0; i < pngs.Length; i++)
             {
-                Texture2D targetTex = TPPlugin.Instance.allTextures.Where(x => x.name == Path.GetFileNameWithoutExtension(pngs[i])).First();
+                string nameToSearch = Path.GetFileNameWithoutExtension(pngs[i]).Trim();
+                IEnumerable<Texture2D> potentialTextures = TPPlugin.Instance.allTextures.Where(x => x.name == nameToSearch);
+                if (potentialTextures.ToArray().Length == 0)
+                {
+                    throw new TexturePackLoadException(this, "Unable to find texture with name: " + nameToSearch + "!");
+                }
+                Texture2D targetTex = potentialTextures.First();
                 Texture2D generatedTex = AssetLoader.AttemptConvertTo(AssetLoader.TextureFromFile(pngs[i]), targetTex.format);
                 generatedTex.name = Path.GetFileName(filePath) + "_" + generatedTex.name;
                 textures.Add(targetTex.GetHashCode(), generatedTex);
@@ -136,8 +151,13 @@ namespace BaldiTexturePacks
             string[] sounds = Directory.GetFiles(Path.Combine(filePath, "Audio"));
             for (int i = 0; i < sounds.Length; i++)
             {
+                string extension = Path.GetExtension(sounds[i]).ToLower().Remove(0, 1).Trim();
+                Debug.Log(extension);
+                if (extension == "dummy") throw new TexturePackLoadException(this, "Attempted to load dummy file! Please rename to proper format! " + Name + "/" + Path.GetFileNameWithoutExtension(sounds[i]));
                 AudioClip clip = AssetLoader.AudioClipFromFile(sounds[i]);
-                clipsToReplace.Add(allclips.Where(x => x.name == Path.GetFileNameWithoutExtension(sounds[i])).First(), clip);
+                AudioClip[] possibleClips = allclips.Where(x => x.name == Path.GetFileNameWithoutExtension(sounds[i])).ToArray();
+                if (possibleClips.Length == 0) throw new TexturePackLoadException(this, "Can't find audioclip with name: " + possibleClips + "!");
+                clipsToReplace.Add(possibleClips.First(), clip);
             }
         }
 
@@ -156,19 +176,47 @@ namespace BaldiTexturePacks
         {
             if (supportedFeatures.HasFlag(SupportedTPFeatures.Textures))
             {
-                LoadTextures();
+                try
+                {
+                    LoadTextures();
+                }
+                catch (Exception E)
+                {
+                    MTM101BaldiDevAPI.CauseCrash(TPPlugin.Instance.Info, E);
+                }
             }
             if (supportedFeatures.HasFlag(SupportedTPFeatures.Language))
             {
-                LoadLocalization();
+                try
+                {
+                    LoadLocalization();
+                }
+                catch (Exception E)
+                {
+                    MTM101BaldiDevAPI.CauseCrash(TPPlugin.Instance.Info, E);
+                }
             }
             if (supportedFeatures.HasFlag(SupportedTPFeatures.Audio))
             {
-                LoadAudios();
+                try
+                {
+                    LoadAudios();
+                }
+                catch (Exception E)
+                {
+                    MTM101BaldiDevAPI.CauseCrash(TPPlugin.Instance.Info, E);
+                }
             }
             if (supportedFeatures.HasFlag(SupportedTPFeatures.Midi))
             {
-                LoadMidis();
+                try
+                {
+                    LoadMidis();
+                }
+                catch (Exception E)
+                {
+                    MTM101BaldiDevAPI.CauseCrash(TPPlugin.Instance.Info, E);
+                }
             }
         }
 

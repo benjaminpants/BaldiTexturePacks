@@ -20,7 +20,7 @@ using BepInEx.Configuration;
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "1.0.0.0")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "1.2.0.0")]
     public class TPPlugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
@@ -30,7 +30,9 @@ namespace BaldiTexturePacks
             "UnityNormalMap",
             "UnityRandomRotation",
             "UnityLinearGrey",
-            "LightMap"
+            "LightMap",
+            "Large01",
+            "Large02"
         };
         public static TPPlugin Instance;
         public string packRootFolder => AssetLoader.GetModPath(this);
@@ -89,7 +91,14 @@ namespace BaldiTexturePacks
                 {
                     continue;
                 }
-                packs[packOrder[i]].Apply();
+                try
+                {
+                    packs[packOrder[i]].Apply();
+                }
+                catch (Exception E)
+                {
+                    MTM101BaldiDevAPI.CauseCrash(TPPlugin.Instance.Info, E);
+                }
             }
             if (!configTextureOnly.Value)
             {
@@ -178,7 +187,14 @@ namespace BaldiTexturePacks
 
         void OnResourcesLoad()
         {
-            allTextures = Resources.FindObjectsOfTypeAll<Texture2D>().Where(x => !(toIgnore.Contains(x.name))).ToArray(); //time to load all textures and keep them in memory foreverr
+            if (MTM101BaldiDevAPI.Instance.Info.Metadata.Version < new Version("3.2.1.0"))
+            {
+                MTM101BaldiDevAPI.CauseCrash(this.Info, new Exception("Texturepacks mod requires a version of the BB+ API at or above 3.2.1.0!\nIf you have updated and are still receiving this error, go to BepInEx/cache and delete every file in there!"));
+                return;
+            }
+            allTextures = Resources.FindObjectsOfTypeAll<Texture2D>().Where(x => !(toIgnore.Contains(x.name)))
+                .Where(x => !x.name.StartsWith("LDR_LLL"))
+                .ToArray(); //time to load all textures and keep them in memory foreverr
             Sprite[] allSprites = Resources.FindObjectsOfTypeAll<Sprite>();
             menuArrows[0] = allSprites.Where(x => x.name == "MenuArrowSheet_2").First();
             menuArrows[1] = allSprites.Where(x => x.name == "MenuArrowSheet_0").First();
