@@ -1,0 +1,65 @@
+{
+  "UnderwaterColor": {
+    "R": 0,
+    "G": 255,
+    "B": 255,
+    "A": 255
+  },
+  "FogColor": {
+    "R": 255,
+    "G": 255,
+    "B": 255,
+    "A": 255
+  },
+  "TestFogColor": {
+    "R": 0,
+    "G": 0,
+    "B": 0,
+    "A": 255
+  },
+  "ItemBackgroundColor": {
+    "R": 255,
+    "G": 255,
+    "B": 255,
+    "A": 255
+  },
+  "ItemSelectColor": {
+    "R": 255,
+    "G": 0,
+    "B": 0,
+    "A": 255
+  },
+  "DetentionTextColor": {
+    "R": 255,
+    "G": 0,
+    "B": 0,
+    "A": 255
+  },
+  "ElevatorFloorColor" : {
+    "R": 255,
+    "G": 0,
+    "B": 0,
+    "A": 255
+  },
+  "ElevatorSeedColor" : {
+    "R": 255,
+    "G": 0,
+    "B": 0,
+    "A": 255
+  },
+  "LockerSideColor" : {
+    "R": 255,
+    "G": 0,
+    "B": 0,
+    "A": 255
+  },
+  "BlueLockerSideColor" : {
+    "R": 0,
+    "G": 255,
+    "B": 255,
+    "A": 255
+  },
+  "BSODAShouldRotate" : true,
+  "UseClassicDetentionText": false,
+  "DetentionText": "You get detention!\n{0} seconds remain."
+}

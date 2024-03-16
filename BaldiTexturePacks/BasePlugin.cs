@@ -20,7 +20,7 @@ using BepInEx.Configuration;
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "1.2.0.0")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "2.0.0.0")]
     public class TPPlugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
@@ -32,13 +32,23 @@ namespace BaldiTexturePacks
             "UnityLinearGrey",
             "LightMap",
             "Large01",
-            "Large02"
+            "Large02",
+            "Medium01",
+            "Medium02",
+            "Medium03",
+            "Medium04",
+            "Medium05",
+            "Medium06",
+            "Thin01",
+            "Thin02",
         };
         public static TPPlugin Instance;
         public string packRootFolder => AssetLoader.GetModPath(this);
         public string packFolder => Path.Combine(packRootFolder, "Texture Packs");
         public string basePackPath => Path.Combine(packFolder, "core");
         public Dictionary<string, TexturePack> packs = new Dictionary<string, TexturePack>();
+        public static MeshRenderer LockerRenderer;
+        public static MeshRenderer BlueLockerRenderer;
         public List<string> packOrder = new List<string>();
         public Texture2D[] allTextures;
         bool packsLoaded = false;
@@ -47,6 +57,7 @@ namespace BaldiTexturePacks
         public Dictionary<SoundObject, AudioClip> originalSoundClips = new Dictionary<SoundObject, AudioClip>();
         public Dictionary<AudioSource, AudioClip> originalSourceClips = new Dictionary<AudioSource, AudioClip>();
         public Dictionary<string, string> midiOverrides = new Dictionary<string, string>();
+        public MiscOverrides generalOverrides = new MiscOverrides();
         internal ConfigEntry<bool> configTextureOnly;
         internal ConfigEntry<bool> configAutoDump;
 
@@ -83,6 +94,7 @@ namespace BaldiTexturePacks
                 midiOverrides.Clear();
                 // tell the game to reload all localization
                 Singleton<LocalizationManager>.Instance.LoadLocalizedText("Subtitles_En.json", Language.English); //placeholder
+                TPPlugin.Instance.generalOverrides = new MiscOverrides();
             }
             // tell all packs to apply in the order they were mounted in
             for (int i = 0; i < packOrder.Count; i++)
@@ -192,6 +204,8 @@ namespace BaldiTexturePacks
                 MTM101BaldiDevAPI.CauseCrash(this.Info, new Exception("Texturepacks mod requires a version of the BB+ API at or above 3.2.1.0!\nIf you have updated and are still receiving this error, go to BepInEx/cache and delete every file in there!"));
                 return;
             }
+            LockerRenderer = Resources.FindObjectsOfTypeAll<MeshRenderer>().Where(x => x.name == "Locker").First();
+            BlueLockerRenderer = Resources.FindObjectsOfTypeAll<MeshRenderer>().Where(x => x.name == "BlueLocker").First();
             allTextures = Resources.FindObjectsOfTypeAll<Texture2D>().Where(x => !(toIgnore.Contains(x.name)))
                 .Where(x => !x.name.StartsWith("LDR_LLL"))
                 .ToArray(); //time to load all textures and keep them in memory foreverr
@@ -271,7 +285,14 @@ titleFixed
 
             }
 
-            LoadPacks();
+            try
+            {
+                LoadPacks();
+            }
+            catch(Exception e)
+            {
+                MTM101BaldiDevAPI.CauseCrash(this.Info, e);
+            }
 
             packsLoaded = true;
 

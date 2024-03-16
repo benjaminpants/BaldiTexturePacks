@@ -20,7 +20,8 @@ namespace BaldiTexturePacks
         Textures = 1,
         Audio = 2,
         Midi = 4,
-        Language = 8
+        Language = 8,
+        ColorOverrides = 16
     }
 
     public class TexturePack
@@ -98,6 +99,28 @@ namespace BaldiTexturePacks
                 }
                 TPPlugin.Log.LogDebug(String.Format("[{0}] Added {1} midis to midi replacement patch.", Name, midiOverrides.Count));
             }
+            if (supportedFeatures.HasFlag(SupportedTPFeatures.ColorOverrides))
+            {
+                if (overrides.FogColor != MiscOverrides.OverrideTemplate.FogColor) { TPPlugin.Instance.generalOverrides.FogColor = overrides.FogColor; }
+                if (overrides.TestFogColor != MiscOverrides.OverrideTemplate.TestFogColor) { TPPlugin.Instance.generalOverrides.TestFogColor = overrides.TestFogColor; }
+                if (overrides.UnderwaterColor != MiscOverrides.OverrideTemplate.UnderwaterColor) { TPPlugin.Instance.generalOverrides.UnderwaterColor = overrides.UnderwaterColor; }
+                if (overrides.ItemBackgroundColor != MiscOverrides.OverrideTemplate.ItemBackgroundColor) { TPPlugin.Instance.generalOverrides.ItemBackgroundColor = overrides.ItemBackgroundColor; }
+                if (overrides.ItemSelectColor != MiscOverrides.OverrideTemplate.ItemSelectColor) { TPPlugin.Instance.generalOverrides.ItemSelectColor = overrides.ItemSelectColor; }
+                if (overrides.DetentionTextColor != MiscOverrides.OverrideTemplate.DetentionTextColor) { TPPlugin.Instance.generalOverrides.DetentionTextColor = overrides.DetentionTextColor; }
+                if (overrides.DetentionText != MiscOverrides.OverrideTemplate.DetentionText) 
+                {
+                    TPPlugin.Instance.generalOverrides.UseClassicDetentionText = overrides.UseClassicDetentionText;
+                    TPPlugin.Instance.generalOverrides.DetentionText = overrides.DetentionText; 
+                }
+                if (overrides.ElevatorFloorColor != MiscOverrides.OverrideTemplate.ElevatorFloorColor) { TPPlugin.Instance.generalOverrides.ElevatorFloorColor = overrides.ElevatorFloorColor; }
+                if (overrides.ElevatorSeedColor != MiscOverrides.OverrideTemplate.ElevatorSeedColor) { TPPlugin.Instance.generalOverrides.ElevatorSeedColor = overrides.ElevatorSeedColor; }
+                TPPlugin.Instance.generalOverrides.BSODAShouldRotate &= overrides.BSODAShouldRotate;
+                if (overrides.LockerSideColor != MiscOverrides.OverrideTemplate.LockerSideColor) { TPPlugin.Instance.generalOverrides.LockerSideColor = overrides.LockerSideColor; }
+                if (overrides.BlueLockerSideColor != MiscOverrides.OverrideTemplate.BlueLockerSideColor) { TPPlugin.Instance.generalOverrides.BlueLockerSideColor = overrides.BlueLockerSideColor; }
+                TPPlugin.LockerRenderer.materials[0].SetColor("_TextureColor", TPPlugin.Instance.generalOverrides.LockerSideColor);
+                TPPlugin.BlueLockerRenderer.materials[0].SetColor("_TextureColor", TPPlugin.Instance.generalOverrides.BlueLockerSideColor);
+                TPPlugin.Log.LogDebug(String.Format("[{0}] Loaded color overrides succesfully.", Name));
+            }
         }
         public string GetDesc()
         {
@@ -109,10 +132,10 @@ namespace BaldiTexturePacks
                     warning = "\n*This pack is not guranteed to instantly unload when disabled!";
                 }
             }
-            if (clipsToReplace.Count != 0)
+            /*if (clipsToReplace.Count != 0)
             {
                 warning += "\n*This pack is using experimental features!(Audio replacement!)";
-            }
+            }*/
             return String.Format("{0}{1}{2}\n{3}", Description, (warning != "") ? "*" : "", warning, "Author:" + Author);
         }
 
@@ -127,7 +150,8 @@ namespace BaldiTexturePacks
                 IEnumerable<Texture2D> potentialTextures = TPPlugin.Instance.allTextures.Where(x => x.name == nameToSearch);
                 if (potentialTextures.ToArray().Length == 0)
                 {
-                    throw new TexturePackLoadException(this, "Unable to find texture with name: " + nameToSearch + "!");
+                    TPPlugin.Log.LogWarning(String.Format("[{0}] Unable to find texture with name: {1}!", Name, nameToSearch));
+                    continue;
                 }
                 Texture2D targetTex = potentialTextures.First();
                 Texture2D generatedTex = AssetLoader.AttemptConvertTo(AssetLoader.TextureFromFile(pngs[i]), targetTex.format);
@@ -156,7 +180,11 @@ namespace BaldiTexturePacks
                 if (extension == "dummy") throw new TexturePackLoadException(this, "Attempted to load dummy file! Please rename to proper format! " + Name + "/" + Path.GetFileNameWithoutExtension(sounds[i]));
                 AudioClip clip = AssetLoader.AudioClipFromFile(sounds[i]);
                 AudioClip[] possibleClips = allclips.Where(x => x.name == Path.GetFileNameWithoutExtension(sounds[i])).ToArray();
-                if (possibleClips.Length == 0) throw new TexturePackLoadException(this, "Can't find audioclip with name: " + possibleClips + "!");
+                if (possibleClips.Length == 0)
+                {
+                    TPPlugin.Log.LogWarning(String.Format("[{0}] Unable to find texture with name: {1}!", Name, Path.GetFileNameWithoutExtension(sounds[i])));
+                    continue;
+                }
                 clipsToReplace.Add(possibleClips.First(), clip);
             }
         }
@@ -218,6 +246,17 @@ namespace BaldiTexturePacks
                     MTM101BaldiDevAPI.CauseCrash(TPPlugin.Instance.Info, E);
                 }
             }
+            if (supportedFeatures.HasFlag(SupportedTPFeatures.ColorOverrides))
+            {
+                try
+                {
+                    LoadOverrides();
+                }
+                catch (Exception E)
+                {
+                    MTM101BaldiDevAPI.CauseCrash(TPPlugin.Instance.Info, E);
+                }
+            }
         }
 
         public void LoadLocalization()
@@ -225,6 +264,13 @@ namespace BaldiTexturePacks
             string subPath = Path.Combine(filePath, "Subtitles.json");
             if (!File.Exists(subPath)) return;
             langData = JsonUtility.FromJson<LocalizationData>(File.ReadAllText(subPath));
+        }
+
+        public void LoadOverrides()
+        {
+            string subPath = Path.Combine(filePath, "Overrides.json");
+            if (!File.Exists(subPath)) return;
+            overrides = JsonConvert.DeserializeObject<MiscOverrides>(File.ReadAllText(subPath));
         }
 
         public string Name = "none";
@@ -243,16 +289,19 @@ namespace BaldiTexturePacks
             }
         }
 
+        [JsonIgnore]
+        public MiscOverrides overrides = new MiscOverrides();
 
         [JsonIgnore]
         protected SupportedTPFeatures supportedFeaturesInternal
         {
             get
             {
+                if ((Version == -1) && (internalName != "core")) throw new Exception(Name + " is using pack version -1 despite not being the core pack!");
                 switch (Version)
                 {
                     case -1: //for core resource pack use
-                        return SupportedTPFeatures.Textures | SupportedTPFeatures.Audio;
+                        return SupportedTPFeatures.Textures | SupportedTPFeatures.Audio | SupportedTPFeatures.ColorOverrides;
                     case 1:
                         return SupportedTPFeatures.Textures;
                     case 2:
@@ -261,6 +310,8 @@ namespace BaldiTexturePacks
                         return SupportedTPFeatures.Textures | SupportedTPFeatures.Language | SupportedTPFeatures.Audio;
                     case 4:
                         return SupportedTPFeatures.Textures | SupportedTPFeatures.Language | SupportedTPFeatures.Audio | SupportedTPFeatures.Midi;
+                    case 5:
+                        return SupportedTPFeatures.Textures | SupportedTPFeatures.Language | SupportedTPFeatures.Audio | SupportedTPFeatures.Midi | SupportedTPFeatures.ColorOverrides;
                     default:
                         throw new NotImplementedException();
                 }
