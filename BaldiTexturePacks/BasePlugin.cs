@@ -197,18 +197,35 @@ namespace BaldiTexturePacks
             });
         }
 
-        void OnResourcesLoad()
+        IEnumerator OnResourcesLoad()
         {
-            if (MTM101BaldiDevAPI.Instance.Info.Metadata.Version < new Version("3.2.1.0"))
-            {
-                MTM101BaldiDevAPI.CauseCrash(this.Info, new Exception("Texturepacks mod requires a version of the BB+ API at or above 3.2.1.0!\nIf you have updated and are still receiving this error, go to BepInEx/cache and delete every file in there!"));
-                return;
-            }
-            LockerRenderer = Resources.FindObjectsOfTypeAll<MeshRenderer>().Where(x => x.name == "Locker").First();
-            BlueLockerRenderer = Resources.FindObjectsOfTypeAll<MeshRenderer>().Where(x => x.name == "BlueLocker").First();
             allTextures = Resources.FindObjectsOfTypeAll<Texture2D>().Where(x => !(toIgnore.Contains(x.name)))
                 .Where(x => !x.name.StartsWith("LDR_LLL"))
                 .ToArray(); //time to load all textures and keep them in memory foreverr
+            int currentTexCount = allTextures.Where(x => x.name != null).Count();
+            int texCount = 0;
+            string ctPath = Path.Combine(packRootFolder, "coreTextureCache.txt");
+            if (File.Exists(ctPath))
+            {
+                if (!configAutoDump.Value)
+                {
+                    texCount = currentTexCount;
+                }
+                else
+                {
+                    texCount = int.Parse(File.ReadAllText(ctPath));
+                }
+            }
+            bool willRedump = (texCount != currentTexCount);
+            yield return 2 + (willRedump ? 2 : 0);
+            yield return "Loading...";
+            if (MTM101BaldiDevAPI.Instance.Info.Metadata.Version < new Version("3.2.1.0"))
+            {
+                MTM101BaldiDevAPI.CauseCrash(this.Info, new Exception("Texturepacks mod requires a version of the BB+ API at or above 3.2.1.0!\nIf you have updated and are still receiving this error, go to BepInEx/cache and delete every file in there!"));
+                yield break;
+            }
+            LockerRenderer = Resources.FindObjectsOfTypeAll<MeshRenderer>().Where(x => x.name == "Locker").First();
+            BlueLockerRenderer = Resources.FindObjectsOfTypeAll<MeshRenderer>().Where(x => x.name == "BlueLocker").First();
             Sprite[] allSprites = Resources.FindObjectsOfTypeAll<Sprite>();
             menuArrows[0] = allSprites.Where(x => x.name == "MenuArrowSheet_2").First();
             menuArrows[1] = allSprites.Where(x => x.name == "MenuArrowSheet_0").First();
@@ -222,21 +239,7 @@ namespace BaldiTexturePacks
             // initialize key directories
             if (!Directory.Exists(packRootFolder)) Directory.CreateDirectory(packRootFolder);
             if (!Directory.Exists(packFolder)) Directory.CreateDirectory(packFolder);
-            int texCount = 0;
-            int currentTexCount = allTextures.Where(x => x.name != null).Count();
-            string ctPath = Path.Combine(packRootFolder, "coreTextureCache.txt");
-            if (File.Exists(ctPath))
-            {
-                if (!configAutoDump.Value)
-                {
-                    texCount = currentTexCount;
-                }
-                else
-                {
-                    texCount = int.Parse(File.ReadAllText(ctPath));
-                }
-            }
-            if (texCount != currentTexCount)
+            if (willRedump)
             {
                 Logger.LogDebug(String.Format("Core texture size mismatch! Redumping textures! ({0}, {1})", texCount, currentTexCount));
                 TexturePack baseTexturePack = new TexturePack("Core", "mystman12", -1, basePackPath);
@@ -247,6 +250,7 @@ namespace BaldiTexturePacks
                     new DirectoryInfo(Path.Combine(basePackPath, "Audio")).GetFiles().Do(x => x.Delete());
                     new DirectoryInfo(Path.Combine(basePackPath, "Midi")).GetFiles().Do(x => x.Delete());
                 }
+                yield return "Dumping Textures...";
                 Directory.CreateDirectory(Path.Combine(basePackPath, "Textures"));
                 DumpAllTextures(Path.Combine(basePackPath, "Textures"), true, out Dictionary<int, Texture2D> oldTex);
                 // convert tex array to kvp
@@ -260,6 +264,7 @@ namespace BaldiTexturePacks
                 baseTexturePack.UpdateFile();
 
                 // Dump All Audio
+                yield return "Dumping Audio...";
                 Directory.CreateDirectory(Path.Combine(basePackPath, "Audio"));
                 AudioClip[] clips = Resources.FindObjectsOfTypeAll<AudioClip>();
                 File.WriteAllText(Path.Combine(basePackPath, "Audio", "README.txt"), "Sorry, no audio dumping (yet)! You'll need a tool such as AssetStudio for that!\nThis is still a useful resource however!\nOpen up a dummy file to see its corresponding subtitle(if it has one)");
@@ -285,6 +290,7 @@ titleFixed
 
             }
 
+            yield return "Loading Packs...";
             try
             {
                 LoadPacks();
@@ -298,6 +304,7 @@ titleFixed
 
             Singleton<PlayerFileManager>.Instance.Load(); //reload data so we load the pack order as we skipped it last time
 
+            yield return "Applying Packs...";
             ApplyPacks(false);
         }
 
@@ -358,7 +365,7 @@ titleFixed
             Harmony harmony = new Harmony("mtm101.rulerp.baldiplus.texturepacks");
 
             //load texture packs here
-            LoadingEvents.RegisterOnAssetsLoaded(OnResourcesLoad,true);
+            LoadingEvents.RegisterOnAssetsLoaded(Info, OnResourcesLoad() ,true);
 
             Log = base.Logger;
 

@@ -176,7 +176,6 @@ namespace BaldiTexturePacks
             for (int i = 0; i < sounds.Length; i++)
             {
                 string extension = Path.GetExtension(sounds[i]).ToLower().Remove(0, 1).Trim();
-                Debug.Log(extension);
                 if (extension == "dummy") throw new TexturePackLoadException(this, "Attempted to load dummy file! Please rename to proper format! " + Name + "/" + Path.GetFileNameWithoutExtension(sounds[i]));
                 AudioClip clip = AssetLoader.AudioClipFromFile(sounds[i]);
                 AudioClip[] possibleClips = allclips.Where(x => x.name == Path.GetFileNameWithoutExtension(sounds[i])).ToArray();
