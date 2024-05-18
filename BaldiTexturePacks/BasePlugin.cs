@@ -20,7 +20,7 @@ using BepInEx.Configuration;
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "2.2.0.0")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "2.2.0.1")]
     public class TPPlugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
@@ -234,7 +234,12 @@ namespace BaldiTexturePacks
                 }
             }
             bool willRedump = (texCount != currentTexCount);
-            yield return (2 + (willRedump ? 2 : 0)) + packOrder.Count + Directory.GetDirectories(packFolder).Length;
+            string[] directories = new string[0];
+            if (Directory.Exists(packFolder))
+            {
+                directories = Directory.GetDirectories(packFolder);
+            }
+            yield return (2 + (willRedump ? 2 : 0)) + packOrder.Count + directories.Length;
             yield return "Loading...";
             if (MTM101BaldiDevAPI.Instance.Info.Metadata.Version < new Version("3.2.1.0"))
             {
@@ -333,7 +338,10 @@ titleFixed
                 {
                     MTM101BaldiDevAPI.CauseCrash(this.Info, e);
                 }
-                yield return loadNum.Current;
+                if (next)
+                {
+                    yield return loadNum.Current;
+                }
             }
 
             packsLoaded = true;
