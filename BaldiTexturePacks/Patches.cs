@@ -1,9 +1,11 @@
 ﻿using HarmonyLib;
+using MTM101BaldAPI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace BaldiTexturePacks
@@ -12,7 +14,7 @@ namespace BaldiTexturePacks
     [HarmonyPatch("PlayMidi")]
     class ReplaceMidi
     {
-        static void Prefix(MusicManager __instance, ref string song)
+        static void Prefix(ref string song)
         {
             if (TPPlugin.Instance.midiOverrides.ContainsKey(song))
             {
@@ -21,6 +23,7 @@ namespace BaldiTexturePacks
         }
     }
 
+    [ConditionalPatchConfig("mtm101.rulerp.baldiplus.texturepacks", "General", "Use Overrides")]
     [HarmonyPatch(typeof(FogEvent))]
     [HarmonyPatch("Begin")]
     class ReplaceFogColor
@@ -31,6 +34,7 @@ namespace BaldiTexturePacks
         }
     }
 
+    [ConditionalPatchConfig("mtm101.rulerp.baldiplus.texturepacks", "General", "Use Overrides")]
     [HarmonyPatch(typeof(FloodEvent))]
     [HarmonyPatch("Initialize")]
     class ReplaceUnderwaterColor
@@ -41,6 +45,7 @@ namespace BaldiTexturePacks
         }
     }
 
+    [ConditionalPatchConfig("mtm101.rulerp.baldiplus.texturepacks", "General", "Use Overrides")]
     [HarmonyPatch(typeof(LookAtGuy))]
     [HarmonyPatch("Blind")]
     class LookAtGuyColor
@@ -51,6 +56,7 @@ namespace BaldiTexturePacks
         }
     }
 
+    [ConditionalPatchConfig("mtm101.rulerp.baldiplus.texturepacks", "General", "Use Overrides")]
     [HarmonyPatch(typeof(HudManager))]
     [HarmonyPatch("SetItemSelect")]
     class SetItemSelectPatch
@@ -69,6 +75,7 @@ namespace BaldiTexturePacks
         }
     }
 
+    [ConditionalPatchConfig("mtm101.rulerp.baldiplus.texturepacks", "General", "Use Overrides")]
     [HarmonyPatch(typeof(HudManager))]
     [HarmonyPatch("Awake")]
     class SetItemBackgrounds
@@ -82,6 +89,7 @@ namespace BaldiTexturePacks
         }
     }
 
+    [ConditionalPatchConfig("mtm101.rulerp.baldiplus.texturepacks", "General", "Use Overrides")]
     [HarmonyPatch(typeof(DetentionUi))]
     [HarmonyPatch("Initialize")]
     class DetentionUIPatch
@@ -106,6 +114,7 @@ namespace BaldiTexturePacks
         }
     }
 
+    [ConditionalPatchConfig("mtm101.rulerp.baldiplus.texturepacks", "General", "Use Overrides")]
     [HarmonyPatch(typeof(DetentionUi))]
     [HarmonyPatch("Update")]
     class DetentionUIUpdatePatch
@@ -119,6 +128,7 @@ namespace BaldiTexturePacks
         }
     }
 
+    [ConditionalPatchConfig("mtm101.rulerp.baldiplus.texturepacks", "General", "Use Overrides")]
     [HarmonyPatch(typeof(ElevatorScreen))]
     [HarmonyPatch("UpdateFloorDisplay")]
     class UpdateFloorDisplayPatch
@@ -130,19 +140,21 @@ namespace BaldiTexturePacks
         }
     }
 
+    [ConditionalPatchConfig("mtm101.rulerp.baldiplus.texturepacks", "General", "Use Overrides")]
     [HarmonyPatch(typeof(ITM_BSODA))]
     [HarmonyPatch("Use")]
     class BSODARotationPatch
     {
-        static void Postfix(Entity ___entity)
+        static void Postfix(SpriteRenderer ___spriteRenderer)
         {
             if (TPPlugin.Instance.generalOverrides.BSODAShouldRotate)
             {
-                ___entity.SetBaseRotation(0f);
+                ___spriteRenderer.SetSpriteRotation(0f);
             }
         }
     }
 
+    [ConditionalPatchConfig("mtm101.rulerp.baldiplus.texturepacks", "General", "Use Overrides")]
     [HarmonyPatch(typeof(StoreScreen))]
     [HarmonyPatch("Start")]
     class StoreScreenFixSlotColors

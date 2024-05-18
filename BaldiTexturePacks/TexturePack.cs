@@ -178,10 +178,11 @@ namespace BaldiTexturePacks
                 string extension = Path.GetExtension(sounds[i]).ToLower().Remove(0, 1).Trim();
                 if (extension == "dummy") throw new TexturePackLoadException(this, "Attempted to load dummy file! Please rename to proper format! " + Name + "/" + Path.GetFileNameWithoutExtension(sounds[i]));
                 AudioClip clip = AssetLoader.AudioClipFromFile(sounds[i]);
+                clip.name = internalName + "_" + clip.name;
                 AudioClip[] possibleClips = allclips.Where(x => x.name == Path.GetFileNameWithoutExtension(sounds[i])).ToArray();
                 if (possibleClips.Length == 0)
                 {
-                    TPPlugin.Log.LogWarning(String.Format("[{0}] Unable to find texture with name: {1}!", Name, Path.GetFileNameWithoutExtension(sounds[i])));
+                    TPPlugin.Log.LogWarning(String.Format("[{0}] Unable to find audio with name: {1}!", Name, Path.GetFileNameWithoutExtension(sounds[i])));
                     continue;
                 }
                 clipsToReplace.Add(possibleClips.First(), clip);

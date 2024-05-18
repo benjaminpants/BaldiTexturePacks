@@ -104,7 +104,6 @@ namespace BaldiTexturePacks
                 {
                     int curDex = (offset + i);
                     Image downArrow = UIHelpers.CreateImage(TPPlugin.menuArrows[0], ch.transform, new Vector2(70f, -9f), false);
-                    downArrow.transform.localScale /= 2f;
                     downArrow.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, 90f));
                     StandardMenuButton downButton = downArrow.gameObject.ConvertToButton<StandardMenuButton>();
                     downButton.highlightedSprite = TPPlugin.menuArrows[1];
@@ -118,7 +117,6 @@ namespace BaldiTexturePacks
                     if (curDex - 1 == 0) continue;
 
                     Image upArrow = UIHelpers.CreateImage(TPPlugin.menuArrows[0], ch.transform, new Vector2(70f, 9f), false);
-                    upArrow.transform.localScale /= 2f;
                     upArrow.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, -90f));
                     StandardMenuButton upButton = upArrow.gameObject.ConvertToButton<StandardMenuButton>();
                     upButton.highlightedSprite = TPPlugin.menuArrows[1];

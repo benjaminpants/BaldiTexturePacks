@@ -20,7 +20,7 @@ using BepInEx.Configuration;
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "2.0.0.0")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "2.2.0.0")]
     public class TPPlugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
@@ -73,10 +73,10 @@ namespace BaldiTexturePacks
 
         void OnMen(OptionsMenu __instance)
         {
-            GameObject ob = CustomOptionsCore.CreateNewCategory(__instance, "Texture Packs");
+            GameObject ob = CustomOptionsCore.CreateNewCategory(__instance, "Texture\nPacks");
             TexturePacksMenu tpm = ob.AddComponent<TexturePacksMenu>();
             tpm.opMen = __instance;
-            StandardMenuButton b = CustomOptionsCore.CreateApplyButton(__instance, "Applies the texture packs", () =>
+            StandardMenuButton b = CustomOptionsCore.CreateApplyButton(__instance, "Applies the texture packs.", () =>
             {
                 tpm.UpdatePacks();
                 ApplyPacks(true);
@@ -86,7 +86,8 @@ namespace BaldiTexturePacks
             tpm.pageBar.transform.SetParent(ob.transform, false);
             b.transform.SetParent(ob.transform, false);
         }
-        void ApplyPacks(bool applyCore)
+
+        IEnumerator ApplyPacksNumerator(bool applyCore)
         {
             if (!configTextureOnly.Value)
             {
@@ -103,6 +104,7 @@ namespace BaldiTexturePacks
                 {
                     continue;
                 }
+                yield return String.Format("Applying {0}({1})...", packs[packOrder[i]].Name, packs[packOrder[i]].Author);
                 try
                 {
                     packs[packOrder[i]].Apply();
@@ -114,6 +116,7 @@ namespace BaldiTexturePacks
             }
             if (!configTextureOnly.Value)
             {
+                yield return "Reloading all TextLocalizers...";
                 // tell all text localizers to update
                 GameObject.FindObjectsOfType<TextLocalizer>(true).Do(x =>
                 {
@@ -121,6 +124,13 @@ namespace BaldiTexturePacks
                     x.Invoke("Start", 0f);
                 });
             }
+            yield break;
+        }
+
+
+        void ApplyPacks(bool applyCore)
+        {
+            ApplyPacksNumerator(applyCore).MoveUntilDone();
         }
 
         void DumpAllTextures(string dumpTo, bool exportDummy, out Dictionary<int, Texture2D> dummyTextures)
@@ -168,7 +178,7 @@ namespace BaldiTexturePacks
             dummyTextures = dumTextures;
         }
 
-        void LoadPacks()
+        IEnumerator LoadPacksNumerator()
         {
             string[] paths = Directory.GetDirectories(packFolder);
             for (int i = 0; i < paths.Length; i++)
@@ -180,18 +190,25 @@ namespace BaldiTexturePacks
                     continue;
                 }
                 Logger.LogDebug(dirName);
-                TexturePack pack = JsonConvert.DeserializeObject<TexturePack>(File.ReadAllText(Path.Combine(paths[i],"pack.json")));
+                yield return "Loading " + dirName + "...";
+                TexturePack pack = JsonConvert.DeserializeObject<TexturePack>(File.ReadAllText(Path.Combine(paths[i], "pack.json")));
                 pack.filePath = path;
                 AddPack(pack, false);
                 pack.LoadAllNeeded();
             }
+            yield break;
+        }
+
+        void LoadPacks()
+        {
+            LoadPacksNumerator().MoveUntilDone();
         }
 
         public void ReloadSourceClips()
         {
+            originalSourceClips.Clear();
             Resources.FindObjectsOfTypeAll<AudioSource>().Do(src =>
             {
-                originalSourceClips.Clear();
                 if (src.clip == null) return;
                 originalSourceClips.Add(src, src.clip);
             });
@@ -217,7 +234,7 @@ namespace BaldiTexturePacks
                 }
             }
             bool willRedump = (texCount != currentTexCount);
-            yield return 2 + (willRedump ? 2 : 0);
+            yield return (2 + (willRedump ? 2 : 0)) + packOrder.Count + Directory.GetDirectories(packFolder).Length;
             yield return "Loading...";
             if (MTM101BaldiDevAPI.Instance.Info.Metadata.Version < new Version("3.2.1.0"))
             {
@@ -244,14 +261,27 @@ namespace BaldiTexturePacks
                 Logger.LogDebug(String.Format("Core texture size mismatch! Redumping textures! ({0}, {1})", texCount, currentTexCount));
                 TexturePack baseTexturePack = new TexturePack("Core", "mystman12", -1, basePackPath);
                 baseTexturePack.Description = "The core textures for Baldi's Basics Plus.";
-                if (Directory.Exists(basePackPath))
+                try
                 {
-                    new DirectoryInfo(Path.Combine(basePackPath, "Textures")).GetFiles().Do(x => x.Delete());
-                    new DirectoryInfo(Path.Combine(basePackPath, "Audio")).GetFiles().Do(x => x.Delete());
-                    new DirectoryInfo(Path.Combine(basePackPath, "Midi")).GetFiles().Do(x => x.Delete());
+                    if (Directory.Exists(basePackPath))
+                    {
+                        new DirectoryInfo(Path.Combine(basePackPath, "Textures")).GetFiles().Do(x => x.Delete());
+                        new DirectoryInfo(Path.Combine(basePackPath, "Audio")).GetFiles().Do(x => x.Delete());
+                        new DirectoryInfo(Path.Combine(basePackPath, "Midi")).GetFiles().Do(x => x.Delete());
+                        //new DirectoryInfo(Path.Combine(basePackPath, "Skyboxes")).GetFiles().Do(x => x.Delete());
+                    }
+                }
+                catch
+                {
+
                 }
                 yield return "Dumping Textures...";
                 Directory.CreateDirectory(Path.Combine(basePackPath, "Textures"));
+                //Directory.CreateDirectory(Path.Combine(basePackPath, "Skyboxes"));
+                /*SkyboxMetaStorage.Instance.All().Do(x =>
+                {
+                    File.WriteAllText(Path.Combine(basePackPath, "Skyboxes"), "Sorry! No Skybox dumping");
+                });*/
                 DumpAllTextures(Path.Combine(basePackPath, "Textures"), true, out Dictionary<int, Texture2D> oldTex);
                 // convert tex array to kvp
                 oldTex.Do(x =>
@@ -291,13 +321,19 @@ titleFixed
             }
 
             yield return "Loading Packs...";
-            try
+            IEnumerator loadNum = LoadPacksNumerator();
+            bool next = true;
+            while (next)
             {
-                LoadPacks();
-            }
-            catch(Exception e)
-            {
-                MTM101BaldiDevAPI.CauseCrash(this.Info, e);
+                try
+                {
+                    next = loadNum.MoveNext();
+                }
+                catch (Exception e)
+                {
+                    MTM101BaldiDevAPI.CauseCrash(this.Info, e);
+                }
+                yield return loadNum.Current;
             }
 
             packsLoaded = true;
@@ -305,7 +341,12 @@ titleFixed
             Singleton<PlayerFileManager>.Instance.Load(); //reload data so we load the pack order as we skipped it last time
 
             yield return "Applying Packs...";
-            ApplyPacks(false);
+            IEnumerator numerator = ApplyPacksNumerator(false);
+            while(numerator.MoveNext())
+            {
+                yield return numerator.Current;
+            }
+            //ApplyPacks(false);
         }
 
         void SaveLoad(bool isSave, string myPath)
@@ -374,9 +415,15 @@ titleFixed
             harmony.PatchAll();
 
             configTextureOnly = Config.Bind("General",     
-                                         "Textures Only",
-                                         false,
-                                         "Enabling this makes texture packs only able to change textures. This is good for mod compatability.");
+                                            "Textures Only",
+                                            false,
+                                            "Enabling this makes texture packs only able to change textures. This is good for mod compatability.");
+
+            Config.Bind("General",
+                        "Use Overrides",
+                        true,
+                        "Disabling this will disable the patches that allow Overrides to work. This is good for mod compatability.");
+
             configAutoDump = Config.Bind("General",
                                          "Auto Dump",
                                          true,
