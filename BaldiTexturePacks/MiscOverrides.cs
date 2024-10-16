@@ -19,8 +19,6 @@ namespace BaldiTexturePacks
         public SerializableColor DetentionTextColor = (SerializableColor)Color.red;
         public SerializableColor ElevatorFloorColor = (SerializableColor)Color.red;
         public SerializableColor ElevatorSeedColor = (SerializableColor)Color.red;
-        public SerializableColor LockerSideColor = (SerializableColor)Color.red;
-        public SerializableColor BlueLockerSideColor = (SerializableColor)Color.cyan;
         public bool BSODAShouldRotate = true;
         public bool UseClassicDetentionText = false;
         public string DetentionText = "You get detention!\r\n{0} seconds remain.";

@@ -115,10 +115,6 @@ namespace BaldiTexturePacks
                 if (overrides.ElevatorFloorColor != MiscOverrides.OverrideTemplate.ElevatorFloorColor) { TPPlugin.Instance.generalOverrides.ElevatorFloorColor = overrides.ElevatorFloorColor; }
                 if (overrides.ElevatorSeedColor != MiscOverrides.OverrideTemplate.ElevatorSeedColor) { TPPlugin.Instance.generalOverrides.ElevatorSeedColor = overrides.ElevatorSeedColor; }
                 TPPlugin.Instance.generalOverrides.BSODAShouldRotate &= overrides.BSODAShouldRotate;
-                if (overrides.LockerSideColor != MiscOverrides.OverrideTemplate.LockerSideColor) { TPPlugin.Instance.generalOverrides.LockerSideColor = overrides.LockerSideColor; }
-                if (overrides.BlueLockerSideColor != MiscOverrides.OverrideTemplate.BlueLockerSideColor) { TPPlugin.Instance.generalOverrides.BlueLockerSideColor = overrides.BlueLockerSideColor; }
-                TPPlugin.LockerRenderer.materials[0].SetColor("_TextureColor", TPPlugin.Instance.generalOverrides.LockerSideColor);
-                TPPlugin.BlueLockerRenderer.materials[0].SetColor("_TextureColor", TPPlugin.Instance.generalOverrides.BlueLockerSideColor);
                 TPPlugin.Log.LogDebug(String.Format("[{0}] Loaded color overrides succesfully.", Name));
             }
         }
@@ -177,6 +173,7 @@ namespace BaldiTexturePacks
             {
                 string extension = Path.GetExtension(sounds[i]).ToLower().Remove(0, 1).Trim();
                 if (extension == "dummy") throw new TexturePackLoadException(this, "Attempted to load dummy file! Please rename to proper format! " + Name + "/" + Path.GetFileNameWithoutExtension(sounds[i]));
+                if (extension == "ini") continue;
                 AudioClip clip = AssetLoader.AudioClipFromFile(sounds[i]);
                 clip.name = internalName + "_" + clip.name;
                 AudioClip[] possibleClips = allclips.Where(x => x.name == Path.GetFileNameWithoutExtension(sounds[i])).ToArray();

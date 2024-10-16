@@ -20,7 +20,7 @@ using BepInEx.Configuration;
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "2.2.0.1")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "2.2.0.3")]
     public class TPPlugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
@@ -47,8 +47,6 @@ namespace BaldiTexturePacks
         public string packFolder => Path.Combine(packRootFolder, "Texture Packs");
         public string basePackPath => Path.Combine(packFolder, "core");
         public Dictionary<string, TexturePack> packs = new Dictionary<string, TexturePack>();
-        public static MeshRenderer LockerRenderer;
-        public static MeshRenderer BlueLockerRenderer;
         public List<string> packOrder = new List<string>();
         public Texture2D[] allTextures;
         bool packsLoaded = false;
@@ -246,13 +244,11 @@ namespace BaldiTexturePacks
                 MTM101BaldiDevAPI.CauseCrash(this.Info, new Exception("Texturepacks mod requires a version of the BB+ API at or above 3.2.1.0!\nIf you have updated and are still receiving this error, go to BepInEx/cache and delete every file in there!"));
                 yield break;
             }
-            LockerRenderer = Resources.FindObjectsOfTypeAll<MeshRenderer>().Where(x => x.name == "Locker").First();
-            BlueLockerRenderer = Resources.FindObjectsOfTypeAll<MeshRenderer>().Where(x => x.name == "BlueLocker").First();
             Sprite[] allSprites = Resources.FindObjectsOfTypeAll<Sprite>();
             menuArrows[0] = allSprites.Where(x => x.name == "MenuArrowSheet_2").First();
             menuArrows[1] = allSprites.Where(x => x.name == "MenuArrowSheet_0").First();
             SoundObject[] allSoundObjects = Resources.FindObjectsOfTypeAll<SoundObject>();
-            UpdatePackSound = allSoundObjects.Where(x => x.name == "Xylophone").First();
+            UpdatePackSound = allSoundObjects.Where(x => x.name == "NotebookCollect").First();
             allSoundObjects.Do(snd =>
             {
                 originalSoundClips.Add(snd,snd.soundClip);
