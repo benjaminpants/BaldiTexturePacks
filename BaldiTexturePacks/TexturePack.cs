@@ -1,4 +1,5 @@
-﻿using MTM101BaldAPI;
+﻿using HarmonyLib;
+using MTM101BaldAPI;
 using MTM101BaldAPI.AssetTools;
 using System;
 using System.Collections;
@@ -21,28 +22,41 @@ namespace BaldiTexturePacks
 
         public Dictionary<SoundObject, SoundReplacement> soundReplacements = new Dictionary<SoundObject, SoundReplacement>();
 
+        public Dictionary<AudioClip, string> clipReplacements = new Dictionary<AudioClip, string>();
+
+        private List<AudioClip> createdClips = new List<AudioClip>();
+
         public TexturePack(string path)
         {
             string texturesPath = Path.Combine(path, "Textures");
-            string audioPath = Path.Combine(path, "SoundObjects");
+            string soundPath = Path.Combine(path, "SoundObjects");
+            string clipsPath = Path.Combine(path, "AudioClips");
             _path = path;
             if (Directory.Exists(texturesPath))
             {
-                string[] textures = Directory.GetFiles(texturesPath);
+                string[] textures = Directory.GetFiles(texturesPath, "*.png");
                 for (int i = 0; i < textures.Length; i++)
                 {
                     texturesToReplacementsPaths.Add(TexturePacksPlugin.validTexturesForReplacement.Find(x => x.name == Path.GetFileNameWithoutExtension(textures[i])), textures[i]);
                 }
             }
-            if (Directory.Exists(audioPath))
+            if (Directory.Exists(soundPath))
             {
-                string[] audio = Directory.GetFiles(audioPath);
+                string[] audio = Directory.GetFiles(soundPath, "*.wav");
                 for (int i = 0; i < audio.Length; i++)
                 {
                     soundReplacements.Add(TexturePacksPlugin.validSoundObjectsForReplacement.Find(x => x.name == Path.GetFileNameWithoutExtension(audio[i])), new SoundReplacement()
                     {
                         clipPath = audio[i]
                     });
+                }
+            }
+            if (Directory.Exists(clipsPath))
+            {
+                string[] clips = Directory.GetFiles(clipsPath, "*.wav");
+                for (int i = 0; i < clips.Length; i++)
+                {
+                    clipReplacements.Add(TexturePacksPlugin.validClipsForReplacement.Find(x => x.name == Path.GetFileNameWithoutExtension(clips[i])), clips[i]);
                 }
             }
 
@@ -55,6 +69,11 @@ namespace BaldiTexturePacks
 
         public IEnumerator LoadAll()
         {
+            foreach (AudioClip clip in createdClips)
+            {
+                UnityEngine.Object.Destroy(clip);
+            }
+            createdClips.Clear();
             foreach (KeyValuePair<Texture2D, string> toReplacePath in texturesToReplacementsPaths)
             {
                 yield return "Loading: " + toReplacePath.Value;
@@ -67,6 +86,14 @@ namespace BaldiTexturePacks
                 yield return "Loading: " + replacement.Value.clipPath;
                 replacement.Value.Load();
                 TexturePacksPlugin.currentSoundReplacements[replacement.Key] = replacement.Value;
+            }
+            foreach (KeyValuePair<AudioClip, string> replacement in clipReplacements)
+            {
+                yield return "Loading: " + replacement.Value;
+                AudioClip audClip = AssetLoader.AudioClipFromFile(replacement.Value);
+                audClip.name += "_Pack"; //todo: update
+                createdClips.Add(audClip);
+                TexturePacksPlugin.currentClipReplacements[replacement.Key] = audClip;
             }
             yield break;
         }

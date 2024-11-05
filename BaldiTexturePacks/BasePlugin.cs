@@ -43,6 +43,8 @@ namespace BaldiTexturePacks
 
         public static List<SoundObject> validSoundObjectsForReplacement = new List<SoundObject>();
 
+        public static List<AudioClip> validClipsForReplacement = new List<AudioClip>();
+
         string packsPath => Path.Combine(Application.streamingAssetsPath, "Texture Packs");
 
         string corePackPath => Path.Combine(packsPath, "core");
@@ -127,6 +129,13 @@ namespace BaldiTexturePacks
             validTexturesForReplacement.AddRange(allTextures);
             yield return "Getting all valid replaceables...";
             validSoundObjectsForReplacement = Resources.FindObjectsOfTypeAll<SoundObject>().Where(x => x.GetInstanceID() >= 0).ToList();
+            validClipsForReplacement = Resources.FindObjectsOfTypeAll<AudioSource>().Where(x => x.GetInstanceID() >= 0).Where(x => x.clip != null).Select(x => x.clip).Distinct().ToList();
+            // handle annoying things like the outdoors ambience
+            Resources.FindObjectsOfTypeAll<AudioSource>().Where(x => x.GetInstanceID() >= 0).Where(x => x.clip != null).Where(x => x.playOnAwake).Do(x =>
+            {
+                x.playOnAwake = false;
+                x.gameObject.AddComponent<AudioPlayOnAwake>().source = x;
+            });
             yield return "Adding packs...";
             // find all valid packs and add them to the list
             string[] pathDirectories = Directory.GetDirectories(packsPath);

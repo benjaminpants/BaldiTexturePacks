@@ -12,6 +12,14 @@ namespace BaldiTexturePacks
         public static Dictionary<Texture2D, Texture2D> originalTextures = new Dictionary<Texture2D, Texture2D>();
 
         public static Dictionary<SoundObject, SoundReplacement> currentSoundReplacements = new Dictionary<SoundObject, SoundReplacement>();
+
+        public static Dictionary<AudioClip, AudioClip> currentClipReplacements = new Dictionary<AudioClip, AudioClip>();
+
+        // todo: do this
+        public static void ClearAllModifications()
+        {
+
+        }
     }
 
     // in the future this will have more features
