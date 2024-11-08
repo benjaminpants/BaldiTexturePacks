@@ -15,10 +15,15 @@ namespace BaldiTexturePacks
 
         public static Dictionary<AudioClip, AudioClip> currentClipReplacements = new Dictionary<AudioClip, AudioClip>();
 
-        // todo: do this
         public static void ClearAllModifications()
         {
+            currentSoundReplacements.Clear();
+            currentClipReplacements.Clear();
 
+            foreach (KeyValuePair<Texture2D, Texture2D> textureToRevert in originalTextures)
+            {
+                AssetLoader.ReplaceTexture(textureToRevert.Key, textureToRevert.Value);
+            }
         }
     }
 

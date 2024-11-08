@@ -37,6 +37,7 @@ namespace BaldiTexturePacks
             "Medium06",
             "Thin01",
             "Thin02",
+            "Font Texture"
         };
 
         public static List<Texture2D> validTexturesForReplacement = new List<Texture2D>();
@@ -115,7 +116,7 @@ namespace BaldiTexturePacks
             }
             for (int i = 0; i < allTextures.Length; i++)
             {
-                Texture2D readableCopy = allTextures[i].MakeReadableCopy(false);
+                Texture2D readableCopy = allTextures[i].MakeReadableCopy(true);
                 if (shouldRegenerateDump)
                 {
                     File.WriteAllBytes(Path.Combine(texturesPath, allTextures[i].name + ".png"), readableCopy.EncodeToPNG());

@@ -15,6 +15,7 @@ namespace BaldiTexturePacks.Patches
         // so for now, I will leave this as is, and see hope it doesn't cause any problems
         static void Prefix(AudioSource source)
         {
+            if (source.clip == null) return;
             //__state = source.clip;
             if (TexturePacksPlugin.currentClipReplacements.ContainsKey(source.clip))
             {
