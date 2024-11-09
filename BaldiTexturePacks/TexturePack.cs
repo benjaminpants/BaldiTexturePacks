@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using BaldiTexturePacks.ReplacementSystem;
+using HarmonyLib;
 using MTM101BaldAPI;
 using MTM101BaldAPI.AssetTools;
 using MTM101BaldAPI.Reflection;
@@ -57,6 +58,8 @@ namespace BaldiTexturePacks
         public PackMeta metaData = new PackMeta();
         public LocalizationData localizationData = null;
 
+        public List<ReplaceNode> manualReplacements = new List<ReplaceNode>();
+
         public PackFlags flags
         {
             get
@@ -80,6 +83,7 @@ namespace BaldiTexturePacks
             string texturesPath = Path.Combine(path, "Textures");
             string soundPath = Path.Combine(path, "SoundObjects");
             string clipsPath = Path.Combine(path, "AudioClips");
+            string replacementsPath = Path.Combine(path, "Replacements");
             // allow legacy packs to load somewhat
             if (flags == PackFlags.Legacy)
             {
@@ -120,6 +124,14 @@ namespace BaldiTexturePacks
                     clipReplacements.Add(clipToReplace, clips[i]);
                 }
             }
+            if (Directory.Exists(replacementsPath))
+            {
+                string[] replacePaths = Directory.GetFiles(replacementsPath);
+                foreach (string rpath in replacePaths)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(rpath)));
+                }
+            }
         }
 
         public void LoadInstantly()
@@ -154,6 +166,11 @@ namespace BaldiTexturePacks
                 audClip.name += "_Pack"; //todo: update
                 createdClips.Add(audClip);
                 TexturePacksPlugin.currentClipReplacements[replacement.Key] = audClip;
+            }
+            foreach (ReplaceNode rpNode in manualReplacements)
+            {
+                // todo: add undos to undos list
+                rpNode.GoThroughTree(TexturePacksPlugin.validManualReplacementTargets, null);
             }
             if (File.Exists(localizationPath))
             {

@@ -11,6 +11,7 @@ using System.Collections;
 using MTM101BaldAPI.Registers;
 using System.Linq;
 using MTM101BaldAPI.AssetTools;
+using TMPro;
 
 namespace BaldiTexturePacks
 {
@@ -39,6 +40,93 @@ namespace BaldiTexturePacks
             "Thin02",
             "Font Texture"
         };
+
+        public static Dictionary<string, List<Component>> validManualReplacementTargets = new Dictionary<string, List<Component>>();
+
+        public static void AddManualReplacementTargetsFromResources<T>() where T : UnityEngine.Component
+        {
+            T[] found = Resources.FindObjectsOfTypeAll<T>().Where(x => x.GetInstanceID() >= 0).ToArray();
+            if (found.Length < 1) return;
+            if (!validManualReplacementTargets.ContainsKey(typeof(T).Name))
+            {
+                validManualReplacementTargets[typeof(T).Name] = new List<Component>();
+            }
+            validManualReplacementTargets[typeof(T).Name].AddRange(found);
+        }
+
+        public static Dictionary<Type, string[]> validFieldChanges = new Dictionary<Type, string[]>()
+        {
+            { 
+                typeof(Fog), 
+                new string[]
+                {
+                "color",
+                "maxDist",
+                "startDist",
+                "strength"
+                }
+            },
+            {
+                typeof(TMP_Text),
+                new string[]
+                {
+                "color",
+                "fontStyle"
+                }
+            },
+            {
+                typeof(TextMeshPro),
+                new string[]
+                {
+                "color",
+                "fontStyle"
+                }
+            },
+            {
+                typeof(TextMeshProUGUI),
+                new string[]
+                {
+                "color",
+                "fontStyle"
+                }
+            },
+            {
+                typeof(UnityEngine.UI.Image),
+                new string[]
+                {
+                "color"
+                }
+            },
+            {
+                typeof(UnityEngine.UI.RawImage),
+                new string[]
+                {
+                "color"
+                }
+            },
+            {
+                typeof(FloodEvent),
+                new string[]
+                {
+                "underwaterFog",
+                }
+            },
+            {
+                typeof(FogEvent),
+                new string[]
+                {
+                "fogColor",
+                }
+            },
+            {
+                typeof(LookAtGuy),
+                new string[]
+                {
+                "fog",
+                }
+            }
+        };
+
 
         public static List<Texture2D> validTexturesForReplacement = new List<Texture2D>();
 
@@ -79,7 +167,12 @@ namespace BaldiTexturePacks
 
         IEnumerator OnLoad()
         {
-            yield return 4;
+            yield return 5;
+            yield return "Getting base objects...";
+            AddManualReplacementTargetsFromResources<MathMachine>();
+            AddManualReplacementTargetsFromResources<FloodEvent>();
+            AddManualReplacementTargetsFromResources<FogEvent>();
+            AddManualReplacementTargetsFromResources<HudManager>();
             yield return "Dumping Resources...";
             if (!Directory.Exists(packsPath))
             {
