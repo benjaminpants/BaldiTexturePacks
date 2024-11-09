@@ -50,6 +50,23 @@ namespace BaldiTexturePacks
 
         string corePackPath => Path.Combine(packsPath, "core");
 
+        Dictionary<string, string> LoadAllPackLocalization(Language lang)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            foreach (TexturePack pack in packs)
+            {
+                if (pack.localizationData != null)
+                {
+                    foreach (LocalizationItem itm in pack.localizationData.items)
+                    {
+                        result.Add(itm.key, itm.value);
+                    }
+                }
+            }
+            return result;
+        }
+
+
         void Awake()
         {
             Harmony harmony = new Harmony("mtm101.rulerp.baldiplus.texturepacks");
@@ -57,26 +74,7 @@ namespace BaldiTexturePacks
             harmony.PatchAllConditionals();
             Log = this.Logger;
             Instance = this;
-        }
-
-        // thanks to 
-        int GetStableHashCode(string str)
-        {
-            unchecked
-            {
-                int hash1 = 5381;
-                int hash2 = hash1;
-
-                for (int i = 0; i < str.Length && str[i] != '\0'; i += 2)
-                {
-                    hash1 = ((hash1 << 5) + hash1) ^ str[i];
-                    if (i == str.Length - 1 || str[i + 1] == '\0')
-                        break;
-                    hash2 = ((hash2 << 5) + hash2) ^ str[i + 1];
-                }
-
-                return hash1 + (hash2 * 1566083941);
-            }
+            AssetLoader.LocalizationFromFunction(LoadAllPackLocalization);
         }
 
         IEnumerator OnLoad()

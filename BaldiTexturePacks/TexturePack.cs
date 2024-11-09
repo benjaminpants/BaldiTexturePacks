@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using MTM101BaldAPI;
 using MTM101BaldAPI.AssetTools;
+using MTM101BaldAPI.Reflection;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -48,16 +49,13 @@ namespace BaldiTexturePacks
     {
         protected string _path;
         public string path => _path;
-
+        public string localizationPath => Path.Combine(path, (flags == PackFlags.Legacy) ? "Subtitles.json" : "Subtitles_English.json");
         public Dictionary<Texture2D, string> texturesToReplacementsPaths = new Dictionary<Texture2D, string>();
-
         public Dictionary<SoundObject, SoundReplacement> soundReplacements = new Dictionary<SoundObject, SoundReplacement>();
-
         public Dictionary<AudioClip, string> clipReplacements = new Dictionary<AudioClip, string>();
-
         private List<AudioClip> createdClips = new List<AudioClip>();
-
         public PackMeta metaData = new PackMeta();
+        public LocalizationData localizationData = null;
 
         public PackFlags flags
         {
@@ -122,7 +120,6 @@ namespace BaldiTexturePacks
                     clipReplacements.Add(clipToReplace, clips[i]);
                 }
             }
-
         }
 
         public void LoadInstantly()
@@ -157,6 +154,13 @@ namespace BaldiTexturePacks
                 audClip.name += "_Pack"; //todo: update
                 createdClips.Add(audClip);
                 TexturePacksPlugin.currentClipReplacements[replacement.Key] = audClip;
+            }
+            if (File.Exists(localizationPath))
+            {
+                yield return "Reloading Localization...";
+                localizationData = JsonConvert.DeserializeObject<LocalizationData>(File.ReadAllText(localizationPath));
+                // todo: store this via AccessTools
+                Singleton<LocalizationManager>.Instance.ReflectionInvoke("Start", null);
             }
             yield break;
         }
