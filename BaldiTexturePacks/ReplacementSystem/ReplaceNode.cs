@@ -143,6 +143,10 @@ namespace BaldiTexturePacks.ReplacementSystem
                         TexturePacksPlugin.Log.LogWarning("Attempted to change property on invalid type: " + comp.GetType().Name + "!");
                         continue;
                     }
+                    if (TexturePacksPlugin.typesThatMustBeValidMovables.Contains(comp.GetType()))
+                    {
+                        if (!TexturePacksPlugin.validMovableComponents.Contains(comp)) continue;
+                    }
                     if (!TexturePacksPlugin.validFieldChanges[comp.GetType()].Contains(replacement.Key))
                     {
                         TexturePacksPlugin.Log.LogWarning("Attempted to change " + replacement.Key + " on " + comp.GetType() + " which is a field not on the whitelist!");
@@ -158,6 +162,10 @@ namespace BaldiTexturePacks.ReplacementSystem
 
         public static string FieldToString(object obj)
         {
+            if (obj.GetType().IsValueType)
+            {
+                return obj.ToString();
+            }
             switch (obj.GetType().Name)
             {
                 case "Single":
@@ -171,6 +179,15 @@ namespace BaldiTexturePacks.ReplacementSystem
                 case "Color32":
                     Color32 c32 = (Color32)obj;
                     return FieldToString(c32.r) + " " + FieldToString(c32.g) + " " + FieldToString(c32.b) + " " + FieldToString(c32.a);
+                case "Vector3":
+                    Vector3 vec3 = (Vector3)obj;
+                    return FieldToString(vec3.x) + " " + FieldToString(vec3.y) + " " + FieldToString(vec3.z);
+                case "Quaternion":
+                    Quaternion qat = (Quaternion)obj;
+                    return FieldToString(qat.eulerAngles);
+                case "Vector2":
+                    Vector2 vec2 = (Vector2)obj;
+                    return FieldToString(vec2.x) + " " + FieldToString(vec2.y);
                 case "System.String":
                     return (string)obj;
                 default:
@@ -178,9 +195,13 @@ namespace BaldiTexturePacks.ReplacementSystem
             }
         }
 
-        public static object StringToField(string type, string str)
+        public static object StringToField(Type type, string str)
         {
-            switch (type)
+            if (type.IsEnum)
+            {
+                return Enum.Parse(type, str);
+            }
+            switch (type.Name)
             {
                 case "Single":
                     return float.Parse(str);
@@ -194,8 +215,16 @@ namespace BaldiTexturePacks.ReplacementSystem
                 case "Color32":
                     string[] split32 = str.Split(' ');
                     return new Color32(byte.Parse(split32[0]), byte.Parse(split32[1]), byte.Parse(split32[2]), byte.Parse(split32[3]));
+                case "Vector3":
+                    string[] splitv3 = str.Split(' ');
+                    return new Vector3(float.Parse(splitv3[0]), float.Parse(splitv3[1]), float.Parse(splitv3[2]));
+                case "Vector2":
+                    string[] splitv2 = str.Split(' ');
+                    return new Vector3(float.Parse(splitv2[0]), float.Parse(splitv2[1]));
                 case "String":
                     return str;
+                case "Quaternion":
+                    return StringToField(typeof(Vector3), str);
                 default:
                     throw new NotImplementedException("Unknown str passed: " + str);
             }
@@ -210,7 +239,7 @@ namespace BaldiTexturePacks.ReplacementSystem
         PropertyInfo infoProperty;
         public string value;
         public string field;
-        public string replacementType;
+        public Type replacementType;
 
         public void SetValue(object v)
         {
@@ -232,13 +261,13 @@ namespace BaldiTexturePacks.ReplacementSystem
             {
                 infoField = AccessTools.Field(instance.GetType(), field);
                 value = ReplaceNode.FieldToString(infoField.GetValue(instance));
-                replacementType = infoField.FieldType.Name;
+                replacementType = infoField.FieldType;
             }
             else
             {
                 infoProperty = AccessTools.Property(instance.GetType(), field);
                 value = ReplaceNode.FieldToString(infoProperty.GetValue(instance));
-                replacementType = infoProperty.PropertyType.Name;
+                replacementType = infoProperty.PropertyType;
             }
         }
 
@@ -246,11 +275,11 @@ namespace BaldiTexturePacks.ReplacementSystem
         {
             if (infoField != null)
             {
-                infoField.SetValue(instance, ReplaceNode.StringToField(infoField.FieldType.Name, value));
+                infoField.SetValue(instance, ReplaceNode.StringToField(infoField.FieldType, value));
             }
             else
             {
-                infoProperty.SetValue(instance, ReplaceNode.StringToField(infoProperty.PropertyType.Name, value));
+                infoProperty.SetValue(instance, ReplaceNode.StringToField(infoProperty.PropertyType, value));
             }
         }
     }
