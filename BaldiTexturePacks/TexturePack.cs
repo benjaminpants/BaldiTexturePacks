@@ -169,8 +169,7 @@ namespace BaldiTexturePacks
             }
             foreach (ReplaceNode rpNode in manualReplacements)
             {
-                // todo: add undos to undos list
-                rpNode.GoThroughTree(TexturePacksPlugin.validManualReplacementTargets, null);
+                rpNode.GoThroughTree(TexturePacksPlugin.validManualReplacementTargets, null).Do(x => TexturePacksPlugin.AddUndo(x));
             }
             if (File.Exists(localizationPath))
             {

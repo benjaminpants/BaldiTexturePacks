@@ -104,6 +104,11 @@ namespace BaldiTexturePacks.ReplacementSystem
                 TexturePacksPlugin.Log.LogDebug(replacement.Key + ":" + replacement.Value);
                 foreach (Component comp in componentsToApplyReplacementsTo)
                 {
+                    if (!TexturePacksPlugin.validFieldChanges.ContainsKey(comp.GetType()))
+                    {
+                        TexturePacksPlugin.Log.LogWarning("Attempted to change property on invalid type: " + comp.GetType().Name + "!");
+                        continue;
+                    }
                     Replacement rp = new Replacement(comp, replacement.Key);
                     undos.Add(rp);
                     rp.SetValue(StringToField(rp.replacementType, replacement.Value));
@@ -161,10 +166,11 @@ namespace BaldiTexturePacks.ReplacementSystem
 
     public class Replacement
     {
-        object instance;
+        public object instance;
         FieldInfo infoField;
         PropertyInfo infoProperty;
-        string value;
+        public string value;
+        public string field;
         public string replacementType;
 
         public void SetValue(object v)
@@ -181,6 +187,7 @@ namespace BaldiTexturePacks.ReplacementSystem
 
         public Replacement(object instance, string field)
         {
+            this.field = field;
             this.instance = instance;
             if (AccessTools.GetFieldNames(instance.GetType()).Contains(field))
             {

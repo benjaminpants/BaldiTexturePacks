@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using BaldiTexturePacks.ReplacementSystem;
+using BepInEx;
 using MTM101BaldAPI.AssetTools;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,17 @@ namespace BaldiTexturePacks
 
         public static Dictionary<AudioClip, AudioClip> currentClipReplacements = new Dictionary<AudioClip, AudioClip>();
 
+        public static List<Replacement> doneReplacements = new List<Replacement>();
+
+        public static void AddUndo(Replacement toUndo)
+        {
+            // make sure there are no exact duplicates
+            if (doneReplacements.Find(x => x.instance == toUndo.instance && x.field == toUndo.field) == null)
+            {
+                doneReplacements.Add(toUndo);
+            }
+        }
+
         public static void ClearAllModifications()
         {
             currentSoundReplacements.Clear();
@@ -24,6 +36,12 @@ namespace BaldiTexturePacks
             {
                 AssetLoader.ReplaceTexture(textureToRevert.Key, textureToRevert.Value);
             }
+
+            foreach (Replacement r in doneReplacements)
+            {
+                r.Undo();
+            }
+            doneReplacements.Clear();
         }
     }
 
