@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 namespace BaldiTexturePacks.ReplacementSystem
 {
@@ -33,7 +34,40 @@ namespace BaldiTexturePacks.ReplacementSystem
 
         public Replacement[] ReplaceNonGameObject(Component target)
         {
-            throw new NotImplementedException("Replacing non-gameobject fields hasn't been implemented yet!");
+            TexturePacksPlugin.Log.LogInfo("targ");
+            TexturePacksPlugin.Log.LogInfo(target);
+            List<Replacement> undos = new List<Replacement>();
+            if (children.Length > 0) throw new NotImplementedException("Non-Component objects having children is NOT supported atm!");
+            object toReplace;
+            if (AccessTools.GetFieldNames(target.GetType()).Contains(name))
+            {
+                toReplace = AccessTools.Field(target.GetType(), name).GetValue(target);
+            }
+            else
+            {
+                toReplace = AccessTools.Property(target.GetType(), name).GetValue(target);
+            }
+            TexturePacksPlugin.Log.LogInfo("replace");
+            TexturePacksPlugin.Log.LogInfo(toReplace);
+
+            foreach (KeyValuePair<string, string> replacement in replacements)
+            {
+                if (!TexturePacksPlugin.validFieldChanges.ContainsKey(toReplace.GetType()))
+                {
+                    TexturePacksPlugin.Log.LogWarning("Attempted to change property on invalid type: " + toReplace.GetType().Name + "!");
+                    continue;
+                }
+                if (!TexturePacksPlugin.validFieldChanges[toReplace.GetType()].Contains(replacement.Key))
+                {
+                    TexturePacksPlugin.Log.LogWarning("Attempted to change " + replacement.Key + " on " + toReplace.GetType() + " which is a field not on the whitelist!");
+                    continue;
+                }
+                Replacement rp = new Replacement(toReplace, replacement.Key);
+                undos.Add(rp);
+                rp.SetValue(StringToField(rp.replacementType, replacement.Value));
+            }
+
+            return undos.ToArray();
         }
 
         public Replacement[] GoThroughTree(Dictionary<string, List<Component>> validToSearch, Component rootObject = null)
@@ -58,10 +92,7 @@ namespace BaldiTexturePacks.ReplacementSystem
                 {
                     // if this isn't a gameobject, such as attempting to replace variables belong to Fog
                     // go through all of them and perform the replacement logic for those
-                    for (int i = 0; i < children.Length; i++)
-                    {
-                        undos.AddRange(children[i].ReplaceNonGameObject(rootObject));
-                    }
+                    return ReplaceNonGameObject(rootObject);
                 }
             }
             else
@@ -85,7 +116,10 @@ namespace BaldiTexturePacks.ReplacementSystem
                 }
                 else
                 {
-                    componentsToApplyReplacementsTo.AddRange(ScanForName(validToSearch[nameParts[0]].ToArray(), nameParts[1]));
+                    if (validToSearch.ContainsKey(nameParts[0]))
+                    {
+                        componentsToApplyReplacementsTo.AddRange(ScanForName(validToSearch[nameParts[0]].ToArray(), nameParts[1]));
+                    }
                 }
             }
 
@@ -107,6 +141,11 @@ namespace BaldiTexturePacks.ReplacementSystem
                     if (!TexturePacksPlugin.validFieldChanges.ContainsKey(comp.GetType()))
                     {
                         TexturePacksPlugin.Log.LogWarning("Attempted to change property on invalid type: " + comp.GetType().Name + "!");
+                        continue;
+                    }
+                    if (!TexturePacksPlugin.validFieldChanges[comp.GetType()].Contains(replacement.Key))
+                    {
+                        TexturePacksPlugin.Log.LogWarning("Attempted to change " + replacement.Key + " on " + comp.GetType() + " which is a field not on the whitelist!");
                         continue;
                     }
                     Replacement rp = new Replacement(comp, replacement.Key);

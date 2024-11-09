@@ -167,6 +167,7 @@ namespace BaldiTexturePacks
                 createdClips.Add(audClip);
                 TexturePacksPlugin.currentClipReplacements[replacement.Key] = audClip;
             }
+            yield return "Traversing replacement trees...";
             foreach (ReplaceNode rpNode in manualReplacements)
             {
                 rpNode.GoThroughTree(TexturePacksPlugin.validManualReplacementTargets, null).Do(x => TexturePacksPlugin.AddUndo(x));

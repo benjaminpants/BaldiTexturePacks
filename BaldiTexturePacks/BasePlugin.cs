@@ -47,6 +47,7 @@ namespace BaldiTexturePacks
         {
             T[] found = Resources.FindObjectsOfTypeAll<T>().Where(x => x.GetInstanceID() >= 0).ToArray();
             if (found.Length < 1) return;
+            found.Do(x => x.MarkAsNeverUnload());
             if (!validManualReplacementTargets.ContainsKey(typeof(T).Name))
             {
                 validManualReplacementTargets[typeof(T).Name] = new List<Component>();
@@ -173,6 +174,7 @@ namespace BaldiTexturePacks
             AddManualReplacementTargetsFromResources<FloodEvent>();
             AddManualReplacementTargetsFromResources<FogEvent>();
             AddManualReplacementTargetsFromResources<HudManager>();
+            AddManualReplacementTargetsFromResources<LookAtGuy>();
             yield return "Dumping Resources...";
             if (!Directory.Exists(packsPath))
             {
