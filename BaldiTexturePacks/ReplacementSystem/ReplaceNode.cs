@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
 
 namespace BaldiTexturePacks.ReplacementSystem
 {
@@ -162,7 +161,7 @@ namespace BaldiTexturePacks.ReplacementSystem
 
         public static string FieldToString(object obj)
         {
-            if (obj.GetType().IsValueType)
+            if (obj.GetType().IsEnum)
             {
                 return obj.ToString();
             }
@@ -188,7 +187,7 @@ namespace BaldiTexturePacks.ReplacementSystem
                 case "Vector2":
                     Vector2 vec2 = (Vector2)obj;
                     return FieldToString(vec2.x) + " " + FieldToString(vec2.y);
-                case "System.String":
+                case "String":
                     return (string)obj;
                 default:
                     throw new NotImplementedException("Unknown primative type: " + obj.GetType().Name);

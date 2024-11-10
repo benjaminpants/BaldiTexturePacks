@@ -40,7 +40,8 @@ namespace BaldiTexturePacks
             "Medium06",
             "Thin01",
             "Thin02",
-            "Font Texture"
+            "Font Texture",
+            "BasicallyGames_Logo_Color_2019"
         };
 
         public static Dictionary<string, List<Component>> validManualReplacementTargets = new Dictionary<string, List<Component>>();
@@ -56,6 +57,20 @@ namespace BaldiTexturePacks
             }
             validManualReplacementTargets[typeof(T).Name].AddRange(found);
             return found;
+        }
+
+        public static List<SpriteOverlay> spriteOverlays = new List<SpriteOverlay>();
+
+        public static SpriteOverlay[] AddOverlaysToTransform(Transform t)
+        {
+            List<SpriteOverlay> overlays = new List<SpriteOverlay>();
+            SpriteRenderer[] renderers = GetAllIncludingDisabled<SpriteRenderer>(t);
+            renderers.Do(x =>
+            {
+                overlays.Add(x.gameObject.AddComponent<SpriteOverlay>());
+            });
+            spriteOverlays.AddRange(overlays);
+            return overlays.ToArray();
         }
 
         public static void AddReplacementTarget(Component c)
@@ -270,6 +285,18 @@ namespace BaldiTexturePacks
             return result;
         }
 
+        static string DisplayOverlayHierachy(SpriteOverlay cmp)
+        {
+            string result = cmp.name;
+            Transform p = cmp.transform.parent;
+            while (p != null)
+            {
+                result = p.name + "->" + result;
+                p = p.transform.parent;
+            }
+            return result;
+        }
+
 
         void Awake()
         {
@@ -283,7 +310,7 @@ namespace BaldiTexturePacks
 
         IEnumerator OnLoad()
         {
-            yield return 5;
+            yield return 4;
             yield return "Getting base objects...";
             AddManualReplacementTargetsFromResources<MathMachine>().Do(x =>
             {
@@ -324,6 +351,10 @@ namespace BaldiTexturePacks
             {
                 Directory.CreateDirectory(texturesPath);
             }
+            if (!File.Exists(Path.Combine(corePackPath, "README.txt")))
+            {
+                File.WriteAllText(Path.Combine(corePackPath, "README.txt"), "Hello! You should not copy this folder to make your texture pack.\nThis folder does contain useful information and dumped textures(which you should only copy the ones you plan to modify), but is not a texture pack base.\nIf you are looking to make a Texture Pack, please look inside the install zip file, as there should be a \"TemplatePack\".\nFor more information, please go to: https://github.com/benjaminpants/BaldiTexturePacks/wiki");
+            }
             Texture2D[] allTextures = Resources.FindObjectsOfTypeAll<Texture2D>()
                 .Where(x => x.GetInstanceID() >= 0)
                 .Where(x => (x.name != "") && (x.name != null))
@@ -355,43 +386,43 @@ namespace BaldiTexturePacks
             {
                 File.WriteAllText(dumpCachePath, coreTexturesHash.ToString());
                 
+                // replacements 'dump'
                 if (!Directory.Exists(Path.Combine(corePackPath, "Replacements")))
                 {
                     Directory.CreateDirectory(Path.Combine(corePackPath, "Replacements"));
                 }
 
-                StringBuilder stb = new StringBuilder();
+                StringBuilder rStb = new StringBuilder();
 
-                stb.AppendLine("This README contains all of the valid replacements you could do!");
+                rStb.AppendLine("This README contains all of the valid replacements you could do!");
 
-                stb.AppendLine("Valid classes and fields:");
+                rStb.AppendLine("Valid classes and fields:");
                 foreach (KeyValuePair<Type, string[]> validField in validFieldChanges)
                 {
-                    stb.AppendLine(validField.Key.Name + ":");
+                    rStb.AppendLine(validField.Key.Name + ":");
                     for (int i = 0; i < validField.Value.Length; i++)
                     {
-                        stb.AppendLine("\t" + validField.Value[i]);
+                        rStb.AppendLine("\t" + validField.Value[i]);
                     }
                 }
-                stb.AppendLine("Valid Root Objects (Objects at the top/root of the replacement file):");
+                rStb.AppendLine("Valid Root Objects (Objects at the top/root of the replacement file):");
                 foreach (KeyValuePair<string, List<Component>> kvp in validManualReplacementTargets)
                 {
                     for (int i = 0; i < kvp.Value.Count; i++)
                     {
-                        stb.AppendLine("\t" + kvp.Key + ":" + kvp.Value[i].name);
+                        rStb.AppendLine("\t" + kvp.Key + ":" + kvp.Value[i].name);
                     }
                 }
 
-                stb.AppendLine("Valid Transformable Objects (Objects that can have their transform positions modified):");
+                rStb.AppendLine("Valid Transformable Objects (Objects that can have their transform positions modified):");
                 foreach (Component comp in validMovableComponents)
                 {
-                    stb.AppendLine("\t" + DisplayHierachy(comp));
+                    rStb.AppendLine("\t" + DisplayHierachy(comp));
                 }
 
-                File.WriteAllText(Path.Combine(corePackPath, "Replacements", "README.txt"), stb.ToString());
+                File.WriteAllText(Path.Combine(corePackPath, "Replacements", "README.txt"), rStb.ToString());
             }
             validTexturesForReplacement.AddRange(allTextures);
-            yield return "Getting all valid replaceables...";
             validSoundObjectsForReplacement = Resources.FindObjectsOfTypeAll<SoundObject>().Where(x => x.GetInstanceID() >= 0 && x.name != "Silence").ToList();
             validClipsForReplacement = Resources.FindObjectsOfTypeAll<AudioSource>().Where(x => x.GetInstanceID() >= 0).Where(x => x.clip != null).Select(x => x.clip).Distinct().ToList();
             // handle annoying things like the outdoors ambience
@@ -400,6 +431,169 @@ namespace BaldiTexturePacks
                 x.playOnAwake = false;
                 x.gameObject.AddComponent<AudioPlayOnAwake>().source = x;
             });
+
+            NPCMetaStorage.Instance.All().Where(x => x.info.Metadata.GUID == "mtm101.rulerp.bbplus.baldidevapi").Do(c =>
+            {
+                c.prefabs.Do(kvp => AddOverlaysToTransform(kvp.Value.transform));
+            });
+
+            Resources.FindObjectsOfTypeAll<Gum>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<TapePlayer>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<HappyBaldi>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+
+            // handle all other dumps
+            if (shouldRegenerateDump)
+            {
+
+                // soundObject 'dump'
+                if (!Directory.Exists(Path.Combine(corePackPath, "SoundObjects")))
+                {
+                    Directory.CreateDirectory(Path.Combine(corePackPath, "SoundObjects"));
+                }
+
+                StringBuilder stb = new StringBuilder();
+
+                stb.AppendLine("No audio dumping is currently available.");
+                stb.AppendLine("Below is a list of valid SoundObjects that you can replace(on the left)");
+                stb.AppendLine("And their associated subtitle and subtitle key.");
+
+                foreach (SoundObject sObj in validSoundObjectsForReplacement)
+                {
+                    stb.AppendLine(sObj.name + "->" + Singleton<LocalizationManager>.Instance.GetLocalizedText(sObj.soundKey) + "(" + sObj.soundKey + ")");
+                }
+
+                File.WriteAllText(Path.Combine(corePackPath, "SoundObjects", "README.txt"), stb.ToString());
+
+                // audioclip 'dump'
+                if (!Directory.Exists(Path.Combine(corePackPath, "AudioClips")))
+                {
+                    Directory.CreateDirectory(Path.Combine(corePackPath, "AudioClips"));
+                }
+
+                stb = new StringBuilder();
+
+                stb.AppendLine("No audio dumping is currently available.");
+                stb.AppendLine("These sounds are not played using a SoundObject, meaning they have no subtitle.");
+                stb.AppendLine("Below is a list of valid AudioClips and what they are attached to.");
+
+                foreach (AudioClip clip in validClipsForReplacement)
+                {
+                    AudioSource[] sources = Resources.FindObjectsOfTypeAll<AudioSource>().Where(x => x.GetInstanceID() >= 0 && x.clip == clip).ToArray();
+                    stb.Append(clip.name + " (");
+                    for (int i = 0; i < sources.Length; i++)
+                    {
+                        stb.Append(sources[i].name + (i < (sources.Length - 1) ? "," : ""));
+                    }
+                    stb.AppendLine(")");
+                }
+
+                File.WriteAllText(Path.Combine(corePackPath, "AudioClips", "README.txt"), stb.ToString());
+
+                // spriteswaps 'dump
+                if (!Directory.Exists(Path.Combine(corePackPath, "SpriteSwaps")))
+                {
+                    Directory.CreateDirectory(Path.Combine(corePackPath, "SpriteSwaps"));
+                }
+
+                stb = new StringBuilder();
+
+                stb.AppendLine("Below is a list of valid SpriteRenderers that sprite swaps will work on:");
+
+                foreach (SpriteOverlay overlay in spriteOverlays)
+                {
+                    stb.AppendLine("\t" + DisplayOverlayHierachy(overlay));
+                }
+
+                Sprite[] allSprites = Resources.FindObjectsOfTypeAll<Sprite>().Where(x => x.GetInstanceID() >= 0).ToArray();
+
+                string[] texturesToSearchFor = new string[]
+                {
+                    "HammerCycle_0_Sheet",
+                    "HammerCycle_1_Sheet",
+                    "HammerCycle_2_Sheet",
+                    "HammerCycle_3_Sheet",
+                    "HammerCycle_4_Sheet",
+                    "HammerCycle_5_Sheet",
+                    "HammerCycle_6_Sheet",
+                    "HammerCycle_7_Sheet",
+                    "HammerSwing_Frame_0",
+                    "HammerSwing_Frame_1",
+                    "HammerSwing_Frame_2",
+                    "HammerSwing_Frame_3",
+                    "HammerSwing_Frame_4",
+                    "HammerSwing_Frame_5",
+                    "HammerSwing_Frame_6",
+                    "HammerSwing_Frame_7",
+                    "HammerSwing_Frame_8",
+                    "WalkCycle_0_Sheet",
+                    "WalkCycle_1_Sheet",
+                    "WalkCycle_3_Sheet",
+                    "WalkCycle_4_Sheet",
+                    "WalkCycle_5_Sheet",
+                    "WalkCycle_6_Sheet",
+                    "WalkCycle_7_Sheet",
+                    "ChaseCycle_0_Sheet",
+                    "ChaseCycle_1_Sheet",
+                    "ChaseCycle_2_Sheet",
+                    "ChaseCycle_3_Sheet",
+                    "ChaseCycle_4_Sheet",
+                    "ChaseCycle_5_Sheet",
+                    "ChaseCycle_6_Sheet",
+                    "ChaseCycle_7_Sheet",
+                    "OpenHands_Dark_Sheet",
+                    "OpenHands_Light_Sheet",
+                    "CraftersSprites",
+                    "DanceSheet",
+                    "CampingTalkSheet",
+                    "FarmTalkSheet",
+                    "CloudyCopter",
+                    "bully_final",
+                    "Banana_Entity",
+                    "BAL_Countdown_Sheet",
+                    "AlarmClock_Sheet",
+                    "BaldiApple",
+                    "BsodaSprite",
+                    "Gotta Sweep Sprite",
+                    "GrapplingHookSprite",
+                    "Head",
+                    "NoL_Sheet",
+                    "Principal",
+                    "Slap_Sheet",
+                    "Slap_Sheet_Broken",
+                    "ChalkFace",
+                    "beans_gumwad",
+                    "beans_enemywad",
+                    "BAL_SmileIdle",
+                    "1PrizeSprites",
+                    "Beans_SpriteSheet",
+                    "OhNoSheet",
+                    "Playtime",
+                    "TapePlayerClosed",
+                    "TapePlayerOpen",
+                    "Phoneog"
+                };
+
+                List<Sprite> foundSprites = new List<Sprite>();
+
+                for (int i = 0; i < texturesToSearchFor.Length; i++)
+                {
+                    foundSprites.AddRange(allSprites.Where(x => x.texture.name == texturesToSearchFor[i]));
+                }
+                // im not adding all 100 baldi wave frames you cant make me
+                foundSprites.AddRange(allSprites.Where(x => x.texture.name.StartsWith("Baldi_Wave")));
+
+                foundSprites.Sort((a, b) => a.name.CompareTo(b.name));
+
+                stb.AppendLine("Below is a list of sprites you can replace + some extra info about them\n(You aren't limited to replacing these! A replacement with a sprite not listed here will still work if it occurs in an object with sprite swaps enabled!):");
+
+                for (int i = 0; i < foundSprites.Count; i++)
+                {
+                    stb.AppendLine("\t" + foundSprites[i].name + " | pixelsPerUnit: " + foundSprites[i].pixelsPerUnit + " | pivot: " + ("(" + foundSprites[i].pivot.x / foundSprites[i].rect.width + ", " + foundSprites[i].pivot.y / foundSprites[i].rect.height + ")") + " | textureRect: " + foundSprites[i].textureRect.ToString() + " | texture: " + foundSprites[i].texture.name);
+                }
+
+                File.WriteAllText(Path.Combine(corePackPath, "SpriteSwaps", "README.txt"), stb.ToString());
+            }
+
             yield return "Adding packs...";
             // find all valid packs and add them to the list
             string[] pathDirectories = Directory.GetDirectories(packsPath);

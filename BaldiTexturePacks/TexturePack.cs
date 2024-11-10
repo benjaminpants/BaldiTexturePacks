@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -51,6 +52,7 @@ namespace BaldiTexturePacks
         protected string _path;
         public string path => _path;
         public string localizationPath => Path.Combine(path, (flags == PackFlags.Legacy) ? "Subtitles.json" : "Subtitles_English.json");
+        public string overlaysPath => Path.Combine(path, "SpriteSwaps");
         public Dictionary<Texture2D, string> texturesToReplacementsPaths = new Dictionary<Texture2D, string>();
         public Dictionary<SoundObject, SoundReplacement> soundReplacements = new Dictionary<SoundObject, SoundReplacement>();
         public Dictionary<AudioClip, string> clipReplacements = new Dictionary<AudioClip, string>();
@@ -58,7 +60,11 @@ namespace BaldiTexturePacks
         public PackMeta metaData = new PackMeta();
         public LocalizationData localizationData = null;
 
+        public List<string> manualReplacementPaths = new List<string>();
         public List<ReplaceNode> manualReplacements = new List<ReplaceNode>();
+
+        public List<string> spriteOverlayPaths = new List<string>();
+        public List<Sprite> createdSprites = new List<Sprite>();
 
         public PackFlags flags
         {
@@ -80,6 +86,7 @@ namespace BaldiTexturePacks
         public TexturePack(string path)
         {
             metaData = JsonConvert.DeserializeObject<PackMeta>(File.ReadAllText(Path.Combine(path, "pack.json")));
+            _path = path;
             string texturesPath = Path.Combine(path, "Textures");
             string soundPath = Path.Combine(path, "SoundObjects");
             string clipsPath = Path.Combine(path, "AudioClips");
@@ -90,7 +97,6 @@ namespace BaldiTexturePacks
                 soundPath = Path.Combine(path, "Audio");
                 clipsPath = Path.Combine(path, "Audio");
             }
-            _path = path;
             if (Directory.Exists(texturesPath))
             {
                 string[] textures = Directory.GetFiles(texturesPath, "*.png");
@@ -126,11 +132,11 @@ namespace BaldiTexturePacks
             }
             if (Directory.Exists(replacementsPath))
             {
-                string[] replacePaths = Directory.GetFiles(replacementsPath);
-                foreach (string rpath in replacePaths)
-                {
-                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(rpath)));
-                }
+                manualReplacementPaths = Directory.GetFiles(replacementsPath, "*.json").ToList();
+            }
+            if (Directory.Exists(overlaysPath))
+            {
+                spriteOverlayPaths = Directory.GetFiles(overlaysPath, "*.json").ToList();
             }
         }
 
@@ -139,13 +145,26 @@ namespace BaldiTexturePacks
             LoadAll().MoveUntilDone();
         }
 
-        public IEnumerator LoadAll()
+        public void Unload()
         {
             foreach (AudioClip clip in createdClips)
             {
                 UnityEngine.Object.Destroy(clip);
             }
+            foreach (Sprite sprite in createdSprites)
+            {
+                UnityEngine.Object.Destroy(sprite.texture);
+                UnityEngine.Object.Destroy(sprite);
+            }
             createdClips.Clear();
+            manualReplacements.Clear();
+            createdSprites.Clear();
+            localizationData = null;
+        }
+
+        public IEnumerator LoadAll()
+        {
+            Unload();
             foreach (KeyValuePair<Texture2D, string> toReplacePath in texturesToReplacementsPaths)
             {
                 yield return "Loading: " + toReplacePath.Value;
@@ -167,10 +186,29 @@ namespace BaldiTexturePacks
                 createdClips.Add(audClip);
                 TexturePacksPlugin.currentClipReplacements[replacement.Key] = audClip;
             }
-            yield return "Traversing replacement trees...";
-            foreach (ReplaceNode rpNode in manualReplacements)
+            if (manualReplacementPaths.Count > 0)
             {
-                rpNode.GoThroughTree(TexturePacksPlugin.validManualReplacementTargets, null).Do(x => TexturePacksPlugin.AddUndo(x));
+                foreach (string replacementPath in manualReplacementPaths)
+                {
+                    yield return "Loading: " + replacementPath;
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(replacementPath)));
+                }
+                yield return "Traversing replacement trees...";
+                foreach (ReplaceNode rpNode in manualReplacements)
+                {
+                    rpNode.GoThroughTree(TexturePacksPlugin.validManualReplacementTargets, null).Do(x => TexturePacksPlugin.AddUndo(x));
+                }
+            }
+            foreach (string overlayPath in spriteOverlayPaths)
+            {
+                yield return "Loading Sprite Swap: " + overlayPath;
+                Dictionary<string, SpriteOverlayData> data = JsonConvert.DeserializeObject<Dictionary<string, SpriteOverlayData>>(File.ReadAllText(overlayPath));
+                foreach (KeyValuePair<string, SpriteOverlayData> kvp in data)
+                {
+                    Sprite generatedSprite = kvp.Value.GenerateSprite(overlaysPath);
+                    createdSprites.Add(generatedSprite);
+                    TexturePacksPlugin.currentSpriteReplacements[kvp.Key] = generatedSprite;
+                }
             }
             if (File.Exists(localizationPath))
             {
