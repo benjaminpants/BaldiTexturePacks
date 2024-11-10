@@ -20,6 +20,8 @@ namespace BaldiTexturePacks
 
         public static Dictionary<string, Sprite> currentSpriteReplacements = new Dictionary<string, Sprite>();
 
+        public static Dictionary<string, string> currentMidiReplacements = new Dictionary<string, string>();
+
         public static void AddUndo(Replacement toUndo)
         {
             // make sure there are no exact duplicates
@@ -37,7 +39,7 @@ namespace BaldiTexturePacks
 
             foreach (TexturePack pack in packs)
             {
-                pack.Unload(); //unload all audio clips and sprites
+                pack.Unload(); //unload all audio clips, sprites, and midis
             }
 
             foreach (KeyValuePair<Texture2D, Texture2D> textureToRevert in originalTextures)

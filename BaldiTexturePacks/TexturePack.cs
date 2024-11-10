@@ -67,6 +67,9 @@ namespace BaldiTexturePacks
         public List<string> spriteOverlayPaths = new List<string>();
         public List<Sprite> createdSprites = new List<Sprite>();
 
+        public List<string> midiPaths = new List<string>();
+        public List<string> loadedMidiIds = new List<string>();
+
         public PackFlags flags
         {
             get
@@ -91,6 +94,7 @@ namespace BaldiTexturePacks
             string texturesPath = Path.Combine(path, "Textures");
             string soundPath = Path.Combine(path, "SoundObjects");
             string clipsPath = Path.Combine(path, "AudioClips");
+            string midisPath = Path.Combine(path, "Midi");
             string replacementsPath = Path.Combine(path, "Replacements");
             // allow legacy packs to load somewhat
             if (flags == PackFlags.Legacy)
@@ -131,6 +135,10 @@ namespace BaldiTexturePacks
                     clipReplacements.Add(clipToReplace, clips[i]);
                 }
             }
+            if (Directory.Exists(midisPath))
+            {
+                midiPaths = Directory.GetFiles(midisPath, "*.mid").ToList();
+            }
             if (flags != PackFlags.Legacy)
             {
                 if (Directory.Exists(replacementsPath))
@@ -160,10 +168,15 @@ namespace BaldiTexturePacks
                 UnityEngine.Object.Destroy(sprite.texture);
                 UnityEngine.Object.Destroy(sprite);
             }
+            foreach (string midiId in loadedMidiIds)
+            {
+                AssetLoader.UnloadCustomMidi(midiId);
+            }
             createdClips.Clear();
             manualReplacements.Clear();
             createdSprites.Clear();
             localizationData = null;
+            loadedMidiIds.Clear();
         }
 
         public IEnumerator LoadAll()
@@ -189,6 +202,13 @@ namespace BaldiTexturePacks
                 audClip.name += "_Pack"; //todo: update
                 createdClips.Add(audClip);
                 TexturePacksPlugin.currentClipReplacements[replacement.Key] = audClip;
+            }
+            foreach (string path in midiPaths)
+            {
+                yield return "Loading: " + path;
+                string loadedMidiID = AssetLoader.MidiFromFile(path, Path.GetFileNameWithoutExtension(path) + "_ovr");
+                loadedMidiIds.Add(loadedMidiID);
+                TexturePacksPlugin.currentMidiReplacements[Path.GetFileNameWithoutExtension(path)] = loadedMidiID;
             }
 
             if (File.Exists(Path.Combine(path, "Overrides.json")))

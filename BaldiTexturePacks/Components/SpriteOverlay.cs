@@ -5,6 +5,8 @@ using UnityEngine;
 
 namespace BaldiTexturePacks
 {
+
+    // todo: investigate chalkles
     public class SpriteOverlay : MonoBehaviour
     {
         SpriteRenderer toCopy;
