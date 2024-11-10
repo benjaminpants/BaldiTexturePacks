@@ -1,0 +1,20 @@
+{
+	"Name":"DetentionUi:*",
+	"Children": [
+		{
+			"Name":"TMP_Text:MainText",
+			"Children": [],
+			"Replacements": {
+				"color":"%"
+			},
+		},
+		{
+			"Name":"TMP_Text:Time",
+			"Children": [],
+			"Replacements": {
+				"color":"%"
+			},
+		},
+	],
+	"Replacements": {}
+}

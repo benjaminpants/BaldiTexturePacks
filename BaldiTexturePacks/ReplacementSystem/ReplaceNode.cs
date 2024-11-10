@@ -189,6 +189,8 @@ namespace BaldiTexturePacks.ReplacementSystem
                     return FieldToString(vec2.x) + " " + FieldToString(vec2.y);
                 case "String":
                     return (string)obj;
+                case "Boolean":
+                    return ((bool)obj == true) ? "true" : "false";
                 default:
                     throw new NotImplementedException("Unknown primative type: " + obj.GetType().Name);
             }
@@ -224,6 +226,8 @@ namespace BaldiTexturePacks.ReplacementSystem
                     return str;
                 case "Quaternion":
                     return StringToField(typeof(Vector3), str);
+                case "Boolean":
+                    return (str.ToLower() == "true" || str.ToLower() == "1");
                 default:
                     throw new NotImplementedException("Unknown str passed: " + str);
             }

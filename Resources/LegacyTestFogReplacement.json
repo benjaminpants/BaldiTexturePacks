@@ -1,0 +1,13 @@
+{
+	"Name":"LookAtGuy:*",
+	"Children": [
+		{
+			"Name":"fog",
+			"Children": [],
+			"Replacements":{
+				"color":"%",
+			},
+		},
+	],
+	"Replacements": {}
+}

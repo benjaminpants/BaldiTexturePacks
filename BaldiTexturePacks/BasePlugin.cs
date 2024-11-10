@@ -12,6 +12,7 @@ using MTM101BaldAPI.Registers;
 using System.Linq;
 using MTM101BaldAPI.AssetTools;
 using TMPro;
+using BaldiTexturePacks.Components;
 
 namespace BaldiTexturePacks
 {
@@ -203,6 +204,17 @@ namespace BaldiTexturePacks
                 }
             },
             {
+                typeof(HardcodedTexturePackReplacements),
+                new string[]
+                {
+                "BSODAShouldRotate",
+                "UseClassicDetentionText",
+                "ItemSlotBackgroundColor",
+                "ItemSlotHighlightColor",
+                "DetentionText"
+                }
+            },
+            {
                 typeof(CursorInitiator),
                 new string[]
                 {
@@ -306,6 +318,7 @@ namespace BaldiTexturePacks
             Log = this.Logger;
             Instance = this;
             AssetLoader.LocalizationFromFunction(LoadAllPackLocalization);
+            AddReplacementTarget(gameObject.AddComponent<HardcodedTexturePackReplacements>());
         }
 
         IEnumerator OnLoad()
@@ -320,6 +333,10 @@ namespace BaldiTexturePacks
             AddManualReplacementTargetsFromResources<FogEvent>();
             AddManualReplacementTargetsFromResources<HudManager>().Do(x => AddAllChildrenToMovables(x.transform));
             AddManualReplacementTargetsFromResources<LookAtGuy>();
+            AddManualReplacementTargetsFromResources<DetentionUi>().Do(x =>
+            {
+                validMovableComponents.AddRange(x.GetComponentsInChildren<RectTransform>());
+            });
             AddManualReplacementTargetsFromResources<ElevatorScreen>().Do(x => AddAllChildrenToMovables(x.transform));
             AddManualReplacementTargetsFromResources<Item>().Do(x =>
             {

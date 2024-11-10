@@ -1,0 +1,19 @@
+{
+	"Name":"ElevatorScreen:*",
+	"Children": [
+		{
+			"Name":"Transform:ElevatorTransission",
+			"Children": [
+				{
+					"Name":"TMP_Text:SeedIndicator",
+					"Children": [],
+					"Replacements":{
+						"color":"%"
+					},
+				},
+			],
+			"Replacements":{}
+		},
+	],
+	"Replacements": {}
+}

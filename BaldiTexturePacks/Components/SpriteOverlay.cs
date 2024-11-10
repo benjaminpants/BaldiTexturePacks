@@ -22,6 +22,14 @@ namespace BaldiTexturePacks
             child.layer = LayerMask.NameToLayer("Billboard");
             myRenderer = child.AddComponent<SpriteRenderer>();
             myRenderer.material = toCopy.material;
+            if (TexturePacksPlugin.currentSpriteReplacements.ContainsKey(toCopy.sprite.name))
+            {
+                myRenderer.sprite = TexturePacksPlugin.currentSpriteReplacements[toCopy.sprite.name];
+            }
+            else
+            {
+                myRenderer.sprite = toCopy.sprite;
+            }
         }
 
         void Update()

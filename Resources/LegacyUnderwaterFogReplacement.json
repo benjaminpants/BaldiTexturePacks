@@ -1,0 +1,13 @@
+{
+	"Name":"FloodEvent:*",
+	"Children": [
+		{
+			"Name":"underwaterFog",
+			"Children": [],
+			"Replacements":{
+				"color":"%",
+			},
+		},
+	],
+	"Replacements": {}
+}

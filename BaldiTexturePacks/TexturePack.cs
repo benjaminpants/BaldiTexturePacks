@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using BaldiTexturePacks.Legacy;
 
 namespace BaldiTexturePacks
 {
@@ -130,13 +131,16 @@ namespace BaldiTexturePacks
                     clipReplacements.Add(clipToReplace, clips[i]);
                 }
             }
-            if (Directory.Exists(replacementsPath))
+            if (flags != PackFlags.Legacy)
             {
-                manualReplacementPaths = Directory.GetFiles(replacementsPath, "*.json").ToList();
-            }
-            if (Directory.Exists(overlaysPath))
-            {
-                spriteOverlayPaths = Directory.GetFiles(overlaysPath, "*.json").ToList();
+                if (Directory.Exists(replacementsPath))
+                {
+                    manualReplacementPaths = Directory.GetFiles(replacementsPath, "*.json").ToList();
+                }
+                if (Directory.Exists(overlaysPath))
+                {
+                    spriteOverlayPaths = Directory.GetFiles(overlaysPath, "*.json").ToList();
+                }
             }
         }
 
@@ -186,13 +190,75 @@ namespace BaldiTexturePacks
                 createdClips.Add(audClip);
                 TexturePacksPlugin.currentClipReplacements[replacement.Key] = audClip;
             }
-            if (manualReplacementPaths.Count > 0)
+
+            if (File.Exists(Path.Combine(path, "Overrides.json")))
             {
-                foreach (string replacementPath in manualReplacementPaths)
+                MiscOverrides compareAgainst = new MiscOverrides();
+                MiscOverrides legacyOverrides = JsonConvert.DeserializeObject<MiscOverrides>(File.ReadAllText(Path.Combine(path, "Overrides.json")));
+                if (legacyOverrides.FogColor != compareAgainst.FogColor)
                 {
-                    yield return "Loading: " + replacementPath;
-                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(replacementPath)));
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyFogReplacement.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.FogColor.unityColor))));
                 }
+                if (legacyOverrides.TestFogColor != compareAgainst.TestFogColor)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyTestFogReplacement.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.TestFogColor.unityColor))));
+                }
+                if (legacyOverrides.UnderwaterColor != compareAgainst.UnderwaterColor)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyUnderwaterFogReplacement.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.UnderwaterColor.unityColor))));
+                }
+                if (legacyOverrides.ElevatorFloorColor != compareAgainst.ElevatorFloorColor)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyFloorTextReplacement.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.ElevatorFloorColor.unityColor))));
+                }
+                if (legacyOverrides.ElevatorSeedColor != compareAgainst.ElevatorSeedColor)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacySeedTextReplacement.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.ElevatorSeedColor.unityColor))));
+                }
+                if (legacyOverrides.DetentionTextColor != compareAgainst.DetentionTextColor)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyDetentionTextColorReplacement.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.DetentionTextColor.unityColor))));
+                }
+                if (legacyOverrides.DetentionText != compareAgainst.DetentionText)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyDetentionTextReplacement.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.DetentionText))));
+                }
+                if (legacyOverrides.UseClassicDetentionText != compareAgainst.UseClassicDetentionText)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyDetentionEnableClassic.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.UseClassicDetentionText))));
+                }
+                if (legacyOverrides.BSODAShouldRotate != compareAgainst.BSODAShouldRotate)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyBSODARotate.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.BSODAShouldRotate))));
+                }
+                if (legacyOverrides.ItemBackgroundColor != compareAgainst.ItemBackgroundColor)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyItemSlotBackgroundColor.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.ItemBackgroundColor.unityColor))));
+                }
+                if (legacyOverrides.ItemSelectColor != compareAgainst.ItemSelectColor)
+                {
+                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyItemSlotHighlightColor.json"))
+                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.ItemSelectColor.unityColor))));
+                }
+            }
+
+            foreach (string replacementPath in manualReplacementPaths)
+            {
+                yield return "Loading: " + replacementPath;
+                manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(replacementPath)));
+            }
+            if (manualReplacements.Count > 0)
+            {
                 yield return "Traversing replacement trees...";
                 foreach (ReplaceNode rpNode in manualReplacements)
                 {
