@@ -20,7 +20,7 @@ namespace BaldiTexturePacks
             child.transform.SetParent(transform);
             child.transform.localScale = Vector3.one;
             child.transform.localPosition = Vector3.zero;
-            child.transform.rotation = Quaternion.identity;
+            child.transform.localRotation = Quaternion.identity;
             child.layer = LayerMask.NameToLayer("Billboard");
             myRenderer = child.AddComponent<SpriteRenderer>();
             myRenderer.material = toCopy.material;
