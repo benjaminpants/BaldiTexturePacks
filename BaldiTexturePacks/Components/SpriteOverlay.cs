@@ -15,7 +15,7 @@ namespace BaldiTexturePacks
         void Awake()
         {
             toCopy = GetComponent<SpriteRenderer>();
-            toCopy.forceRenderingOff = true; // nothing else uses this
+            toCopy.forceRenderingOff = true; // nothing else uses this (mods should just be using enabled, and bb+ doesn't cull characters.)
             GameObject child = new GameObject("FakeRenderer");
             child.transform.SetParent(transform);
             child.transform.localScale = Vector3.one;

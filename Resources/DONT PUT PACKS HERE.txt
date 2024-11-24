@@ -1,0 +1,2 @@
+Please put texture packs into StreamingAssets/Texture Packs
+This folder is now used to store the replacements used for legacy Overrides.json to keep legacy packs (mostly) functional.

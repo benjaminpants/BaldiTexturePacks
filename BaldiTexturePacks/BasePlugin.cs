@@ -13,6 +13,8 @@ using System.Linq;
 using MTM101BaldAPI.AssetTools;
 using TMPro;
 using BaldiTexturePacks.Components;
+using MTM101BaldAPI.OptionsAPI;
+using MTM101BaldAPI.SaveSystem;
 
 namespace BaldiTexturePacks
 {
@@ -20,6 +22,8 @@ namespace BaldiTexturePacks
     [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.0.0.0")]
     public partial class TexturePacksPlugin : BaseUnityPlugin
     {
+        public static List<(string, bool)> packOrder = new List<(string, bool)>();
+
         public static TexturePacksPlugin Instance;
 
         internal static ManualLogSource Log;
@@ -27,6 +31,8 @@ namespace BaldiTexturePacks
         public static ElevatorScreen baseElevatorScreen;
 
         public static List<TexturePack> packs = new List<TexturePack>();
+
+        public static bool allPacksReady = false;
 
         public static string[] manualExclusions => new string[]
         {
@@ -278,7 +284,7 @@ namespace BaldiTexturePacks
                 {
                     foreach (LocalizationItem itm in pack.localizationData.items)
                     {
-                        result.Add(itm.key, itm.value);
+                        result[itm.key] = itm.value;
                     }
                 }
             }
@@ -319,11 +325,51 @@ namespace BaldiTexturePacks
             Instance = this;
             AssetLoader.LocalizationFromFunction(LoadAllPackLocalization);
             AddReplacementTarget(gameObject.AddComponent<HardcodedTexturePackReplacements>());
+            CustomOptionsCore.OnMenuInitialize += AddCategory;
+            ModdedSaveSystem.AddSaveLoadAction(this, SaveHandler);
+        }
+
+        public void SaveHandler(bool isSave, string path)
+        {
+            string filePath = Path.Combine(path, "packs.txt");
+            // save code
+            if (isSave)
+            {
+                StringBuilder stb = new StringBuilder();
+                if (isSave)
+                {
+                    for (int i = 0; i < packOrder.Count; i++)
+                    {
+                        stb.AppendLine(packOrder[i].Item1 + ":" + (packOrder[i].Item2 ? "enabled" : "disabled"));
+                    }
+                }
+                File.WriteAllText(filePath, stb.ToString());
+                return;
+            }
+            packOrder.Clear();
+            if (!File.Exists(filePath)) return;
+            // load code
+            string[] lines = File.ReadAllLines(filePath);
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string[] split = lines[i].Split(':');
+                if (split.Length != 2) continue; //invalid, ignore.
+                packOrder.Add((split[0], split[1] == "enabled"));
+            }
+            if (allPacksReady)
+            {
+                packOrder.RemoveAll(x => (packs.Where(z => z.internalId == x.Item1).Count() == 0));
+            }
+        }
+
+        void AddCategory(OptionsMenu __instance, CustomOptionsHandler handler)
+        {
+            handler.AddCategory<PackManagerScreen>("Texture\nPacks");
         }
 
         IEnumerator OnLoad()
         {
-            yield return 4;
+            yield return 10;
             yield return "Getting base objects...";
             AddManualReplacementTargetsFromResources<MathMachine>().Do(x =>
             {
@@ -354,7 +400,7 @@ namespace BaldiTexturePacks
                 }
             });
             baseElevatorScreen = Resources.FindObjectsOfTypeAll<ElevatorScreen>().First(x => x.GetInstanceID() >= 0 && x.gameObject.scene.name == null);
-            yield return "Dumping Resources...";
+            yield return "Setting up file structures...";
             if (!Directory.Exists(packsPath))
             {
                 Directory.CreateDirectory(packsPath);
@@ -372,6 +418,7 @@ namespace BaldiTexturePacks
             {
                 File.WriteAllText(Path.Combine(corePackPath, "README.txt"), "Hello! You should not copy this folder to make your texture pack.\nThis folder does contain useful information and dumped textures(which you should only copy the ones you plan to modify), but is not a texture pack base.\nIf you are looking to make a Texture Pack, please look inside the install zip file, as there should be a \"TemplatePack\".\nFor more information, please go to: https://github.com/benjaminpants/BaldiTexturePacks/wiki");
             }
+            yield return "Fetching Textures...";
             Texture2D[] allTextures = Resources.FindObjectsOfTypeAll<Texture2D>()
                 .Where(x => x.GetInstanceID() >= 0)
                 .Where(x => (x.name != "") && (x.name != null))
@@ -382,7 +429,6 @@ namespace BaldiTexturePacks
             int coreTexturesHash = allTextures.Length;
             bool shouldRegenerateDump = true;
             string dumpCachePath = Path.Combine(corePackPath, "dumpCache.txt");
-            Log.LogInfo(coreTexturesHash);
             if (File.Exists(dumpCachePath))
             {
                 if (File.ReadAllText(dumpCachePath) == coreTexturesHash.ToString())
@@ -390,6 +436,7 @@ namespace BaldiTexturePacks
                     shouldRegenerateDump = false;
                 }
             }
+            yield return (shouldRegenerateDump ? "Dumping textures..." : "Creating readable texture copies...");
             for (int i = 0; i < allTextures.Length; i++)
             {
                 Texture2D readableCopy = allTextures[i].MakeReadableCopy(true);
@@ -399,6 +446,7 @@ namespace BaldiTexturePacks
                 }
                 originalTextures.Add(allTextures[i], readableCopy);
             }
+            yield return "Dumping field changes...";
             if (shouldRegenerateDump)
             {
                 File.WriteAllText(dumpCachePath, coreTexturesHash.ToString());
@@ -439,6 +487,7 @@ namespace BaldiTexturePacks
 
                 File.WriteAllText(Path.Combine(corePackPath, "Replacements", "README.txt"), rStb.ToString());
             }
+            yield return "Fetching Soundobjects and Audioclips...";
             validTexturesForReplacement.AddRange(allTextures);
             validSoundObjectsForReplacement = Resources.FindObjectsOfTypeAll<SoundObject>().Where(x => x.GetInstanceID() >= 0 && x.name != "Silence").ToList();
             validClipsForReplacement = Resources.FindObjectsOfTypeAll<AudioSource>().Where(x => x.GetInstanceID() >= 0).Where(x => x.clip != null).Select(x => x.clip).Distinct().ToList();
@@ -449,6 +498,8 @@ namespace BaldiTexturePacks
                 x.gameObject.AddComponent<AudioPlayOnAwake>().source = x;
             });
 
+            yield return "Adding sprite overlays...";
+
             NPCMetaStorage.Instance.All().Where(x => x.info.Metadata.GUID == "mtm101.rulerp.bbplus.baldidevapi").Do(c =>
             {
                 c.prefabs.Do(kvp => AddOverlaysToTransform(kvp.Value.transform));
@@ -458,6 +509,7 @@ namespace BaldiTexturePacks
             Resources.FindObjectsOfTypeAll<TapePlayer>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<HappyBaldi>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
 
+            yield return "Dumping all other data...";
             // handle all other dumps
             if (shouldRegenerateDump)
             {
@@ -612,18 +664,37 @@ namespace BaldiTexturePacks
             }
 
             yield return "Adding packs...";
+            bool packOrderChanged = false;
             // find all valid packs and add them to the list
             string[] pathDirectories = Directory.GetDirectories(packsPath);
             for (int i = 0; i < pathDirectories.Length; i++)
             {
                 if (Path.GetFileNameWithoutExtension(pathDirectories[i]) == "core") continue; // core is not an actual texture pack
                 packs.Add(new TexturePack(pathDirectories[i]));
+                // add pack to order list if it doesn't exist
+                int foundIndex = packOrder.FindIndex(x => x.Item1 == packs[packs.Count - 1].internalId);
+                if (foundIndex == -1)
+                {
+                    packOrderChanged = true;
+                    packOrder.Add((packs[packs.Count - 1].internalId, false));
+                }
             }
             yield return "Loading packs...";
-            for (int i = 0; i < packs.Count; i++)
+            for (int i = 0; i < packOrder.Count; i++)
             {
-                packs[i].LoadInstantly();
+                TexturePack foundPack = packs.Find(x => x.internalId == packOrder[i].Item1);
+                if (foundPack == null) continue;
+                if (packOrder[i].Item2)
+                {
+                    foundPack.LoadInstantly();
+                }
             }
+            allPacksReady = true;
+            if (packOrderChanged)
+            {
+                SaveHandler(true, ModdedSaveSystem.GetCurrentSaveFolder(this));
+            }
+            //packOrder.RemoveAll(x => (packs.Where(z => z.internalId == x.Item1).Count() == 0));
             yield break;
         }
     }

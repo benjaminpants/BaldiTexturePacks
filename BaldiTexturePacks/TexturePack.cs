@@ -52,6 +52,8 @@ namespace BaldiTexturePacks
     {
         protected string _path;
         public string path => _path;
+
+        public string internalId => Path.GetFileNameWithoutExtension(_path);
         public string localizationPath => Path.Combine(path, (flags == PackFlags.Legacy) ? "Subtitles.json" : "Subtitles_English.json");
         public string overlaysPath => Path.Combine(path, "SpriteSwaps");
         public Dictionary<Texture2D, string> texturesToReplacementsPaths = new Dictionary<Texture2D, string>();
