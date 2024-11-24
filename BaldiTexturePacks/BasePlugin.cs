@@ -166,6 +166,14 @@ namespace BaldiTexturePacks
                 }
             },
             {
+                typeof(LineRenderer),
+                new string[]
+                {
+                "widthMultiplier",
+                "textureMode",
+                }
+            },
+            {
                 typeof(TMP_Text),
                 new string[]
                 {
@@ -364,12 +372,13 @@ namespace BaldiTexturePacks
 
         void AddCategory(OptionsMenu __instance, CustomOptionsHandler handler)
         {
+            if (Singleton<CoreGameManager>.Instance != null) return;
             handler.AddCategory<PackManagerScreen>("Texture\nPacks");
         }
 
         IEnumerator OnLoad()
         {
-            yield return 10;
+            yield return 11;
             yield return "Getting base objects...";
             AddManualReplacementTargetsFromResources<MathMachine>().Do(x =>
             {
@@ -388,7 +397,7 @@ namespace BaldiTexturePacks
             {
                 if (x.transform.Find("RendererBase"))
                 {
-                    validMovableComponents.Add(x.transform.Find("RendererBase").GetComponent<Transform>());
+                    validMovableComponents.Add(x.transform.Find("RendererBase").GetComponentInChildren<SpriteRenderer>());
                 }
             });
             AddManualReplacementTargetsFromResources<BaldiBG>().Do(x =>
@@ -426,6 +435,21 @@ namespace BaldiTexturePacks
                 .Where(x => !x.name.StartsWith("LDR_LLL"))
                 .ToArray();
 
+            // create grapple hook dummy texture
+            Texture2D grappleLine = new Texture2D(256, 256, TextureFormat.RGBA32, false);
+            grappleLine.filterMode = FilterMode.Point;
+            grappleLine.name = "GrappleLine";
+            Color[] colors = new Color[256 * 256];
+            for (int i = 0; i < colors.Length; i++)
+            {
+                colors[i] = Color.black;
+            }
+            grappleLine.SetPixels(0, 0, 256, 256, colors);
+            grappleLine.Apply();
+            validTexturesForReplacement.Add(grappleLine);
+            validTexturesForReplacement.AddRange(allTextures);
+            allTextures = allTextures.AddToArray(grappleLine);
+
             int coreTexturesHash = allTextures.Length;
             bool shouldRegenerateDump = true;
             string dumpCachePath = Path.Combine(corePackPath, "dumpCache.txt");
@@ -436,6 +460,7 @@ namespace BaldiTexturePacks
                     shouldRegenerateDump = false;
                 }
             }
+
             yield return (shouldRegenerateDump ? "Dumping textures..." : "Creating readable texture copies...");
             for (int i = 0; i < allTextures.Length; i++)
             {
@@ -488,7 +513,7 @@ namespace BaldiTexturePacks
                 File.WriteAllText(Path.Combine(corePackPath, "Replacements", "README.txt"), rStb.ToString());
             }
             yield return "Fetching Soundobjects and Audioclips...";
-            validTexturesForReplacement.AddRange(allTextures);
+
             validSoundObjectsForReplacement = Resources.FindObjectsOfTypeAll<SoundObject>().Where(x => x.GetInstanceID() >= 0 && x.name != "Silence").ToList();
             validClipsForReplacement = Resources.FindObjectsOfTypeAll<AudioSource>().Where(x => x.GetInstanceID() >= 0).Where(x => x.clip != null).Select(x => x.clip).Distinct().ToList();
             // handle annoying things like the outdoors ambience
@@ -496,6 +521,20 @@ namespace BaldiTexturePacks
             {
                 x.playOnAwake = false;
                 x.gameObject.AddComponent<AudioPlayOnAwake>().source = x;
+            });
+
+            yield return "Editing grappling hook...";
+            Material newMat = new Material(Resources.FindObjectsOfTypeAll<Material>().First(x => x.name == "White" && (x.GetInstanceID() >= 0)));
+            newMat.name = "TexturePackGrappleMaterial";
+            newMat.color = Color.white;
+            newMat.SetMainTexture(grappleLine);
+            ItemMetaStorage.Instance.FindByEnum(Items.GrapplingHook).itemObjects.Do(x =>
+            {
+                LineRenderer renderer = x.item.GetComponentInChildren<LineRenderer>();
+                if (renderer)
+                {
+                    renderer.material = newMat;
+                }
             });
 
             yield return "Adding sprite overlays...";

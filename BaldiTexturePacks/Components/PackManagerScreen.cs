@@ -48,7 +48,8 @@ namespace BaldiTexturePacks
                 bars = CreateBars(() => 
                 {
                     page = bars.GetRaw();
-                }, "PageBar", (originVec + new Vector3(0f, entriesPerPage * -40f, 0f)), maxPages);
+                    UpdatePage();
+                }, "PageBar", (originVec + new Vector3(-100f, entriesPerPage * -40f, 0f)), maxPages);
             }
         }
 
