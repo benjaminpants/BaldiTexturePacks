@@ -247,11 +247,6 @@ namespace BaldiTexturePacks
                     manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyDetentionTextColorReplacement.json"))
                         .Replace("%", ReplaceNode.FieldToString(legacyOverrides.DetentionTextColor.unityColor))));
                 }
-                if (legacyOverrides.DetentionText != compareAgainst.DetentionText)
-                {
-                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyDetentionTextReplacement.json"))
-                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.DetentionText))));
-                }
                 if (legacyOverrides.UseClassicDetentionText != compareAgainst.UseClassicDetentionText)
                 {
                     manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyDetentionEnableClassic.json"))

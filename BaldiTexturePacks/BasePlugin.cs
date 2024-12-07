@@ -15,6 +15,7 @@ using TMPro;
 using BaldiTexturePacks.Components;
 using MTM101BaldAPI.OptionsAPI;
 using MTM101BaldAPI.SaveSystem;
+using UnityEngine.UI;
 
 namespace BaldiTexturePacks
 {
@@ -222,10 +223,8 @@ namespace BaldiTexturePacks
                 new string[]
                 {
                 "BSODAShouldRotate",
-                "UseClassicDetentionText",
                 "ItemSlotBackgroundColor",
                 "ItemSlotHighlightColor",
-                "DetentionText"
                 }
             },
             {
@@ -388,9 +387,10 @@ namespace BaldiTexturePacks
             AddManualReplacementTargetsFromResources<FogEvent>();
             AddManualReplacementTargetsFromResources<HudManager>().Do(x => AddAllChildrenToMovables(x.transform));
             AddManualReplacementTargetsFromResources<LookAtGuy>();
-            AddManualReplacementTargetsFromResources<DetentionUi>().Do(x =>
+            AddManualReplacementTargetsFromResources<DigitalClock>().Do(x =>
             {
-                validMovableComponents.AddRange(x.GetComponentsInChildren<RectTransform>());
+                validMovableComponents.AddRange(x.GetComponentsInChildren<SpriteRenderer>());
+                validMovableComponents.AddRange(x.GetComponentsInChildren<Image>());
             });
             AddManualReplacementTargetsFromResources<ElevatorScreen>().Do(x => AddAllChildrenToMovables(x.transform));
             AddManualReplacementTargetsFromResources<Item>().Do(x =>

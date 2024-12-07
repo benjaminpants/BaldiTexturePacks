@@ -10,26 +10,6 @@ using UnityEngine.UI;
 
 namespace BaldiTexturePacks.Patches
 {
-    [HarmonyPatch(typeof(DetentionUi))]
-    [HarmonyPatch("Initialize")]
-    class DetentionUIPatch
-    {
-        static void Postfix(DetentionUi __instance, ref TMP_Text ___timer)
-        {
-            TMP_Text mainText = __instance.transform.Find("MainText").GetComponent<TMP_Text>();
-            if (mainText == null)
-            {
-                return;
-            }
-            mainText.text = String.Format(HardcodedTexturePackReplacements.Instance.DetentionText, " ");
-            if (HardcodedTexturePackReplacements.Instance.UseClassicDetentionText)
-            {
-                ___timer.color = Color.clear; //hide the timer
-                ___timer = mainText;
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(HudManager))]
     [HarmonyPatch("SetItemSelect")]
     class SetItemSelectPatch
@@ -57,19 +37,6 @@ namespace BaldiTexturePacks.Patches
             for (int i = 0; i < ___itemBackgrounds.Length; i++)
             {
                 ___itemBackgrounds[i].color = HardcodedTexturePackReplacements.Instance.ItemSlotBackgroundColor;
-            }
-        }
-    }
-
-    [HarmonyPatch(typeof(DetentionUi))]
-    [HarmonyPatch("Update")]
-    class DetentionUIUpdatePatch
-    {
-        static void Postfix(TMP_Text ___timer, int ___roundedTime)
-        {
-            if (HardcodedTexturePackReplacements.Instance.UseClassicDetentionText)
-            {
-                ___timer.text = String.Format(HardcodedTexturePackReplacements.Instance.DetentionText, ___roundedTime.ToString());
             }
         }
     }

@@ -1,19 +1,18 @@
 {
-	"Name":"DetentionUi:*",
+	"Name":"DigitalClock:DetentionTimer",
 	"Children": [
 		{
-			"Name":"TMP_Text:MainText",
-			"Children": [],
-			"Replacements": {
-				"color":"%"
-			},
-		},
-		{
-			"Name":"TMP_Text:Time",
-			"Children": [],
-			"Replacements": {
-				"color":"%"
-			},
+			"Name":"Transform:Display",
+			"Children": [
+				{
+					"Name":"SpriteRenderer:*",
+					"Children":[],
+					"Replacements": {
+						"color":"%"
+					},
+				}
+			],
+			"Replacements": {},
 		},
 	],
 	"Replacements": {}
