@@ -64,6 +64,8 @@ namespace BaldiTexturePacks
         public LocalizationData localizationData = null;
 
         public List<string> manualReplacementPaths = new List<string>();
+
+        public List<string> subtitleOverridePaths = new List<string>();
         public List<ReplaceNode> manualReplacements = new List<ReplaceNode>();
 
         public List<string> spriteOverlayPaths = new List<string>();
@@ -126,6 +128,7 @@ namespace BaldiTexturePacks
                         clipPath = audio[i]
                     });
                 }
+                subtitleOverridePaths = Directory.GetFiles(soundPath, "*.json").ToList();
             }
             if (Directory.Exists(clipsPath))
             {
@@ -205,9 +208,14 @@ namespace BaldiTexturePacks
                 createdClips.Add(audClip);
                 TexturePacksPlugin.currentClipReplacements[replacement.Key] = audClip;
             }
+            foreach (string subOverridePath in subtitleOverridePaths)
+            {
+                yield return "Loading Subtitle Override: " + subOverridePath;
+                TexturePacksPlugin.currentSubtitleOverrides[TexturePacksPlugin.validSoundObjectsForReplacement.First(x => x.name == Path.GetFileNameWithoutExtension(subOverridePath))] = JsonConvert.DeserializeObject<SubtitleOverrideData>(File.ReadAllText(subOverridePath));
+            }
             foreach (string path in midiPaths)
             {
-                yield return "Loading: " + path;
+                yield return "Loading Midi: " + path;
                 string loadedMidiID = AssetLoader.MidiFromFile(path, Path.GetFileNameWithoutExtension(path) + "_ovr");
                 loadedMidiIds.Add(loadedMidiID);
                 TexturePacksPlugin.currentMidiReplacements[Path.GetFileNameWithoutExtension(path)] = loadedMidiID;

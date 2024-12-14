@@ -29,6 +29,8 @@ namespace BaldiTexturePacks
 
         const int entriesPerPage = 3;
 
+        public TextMeshProUGUI pageText;
+
         public PackEntryUI[] entries = new PackEntryUI[entriesPerPage];
 
         public override void Build()
@@ -40,9 +42,8 @@ namespace BaldiTexturePacks
                 entries[i].gameObject.SetActive(false);
             }
             CreateApplyButton(() => { ApplyPacks(true); });
-            UpdatePage();
             maxPages = Mathf.FloorToInt((float)(TexturePacksPlugin.packOrder.Count - 1) / entriesPerPage);
-            if (maxPages > 0)
+            /*if (maxPages > 0)
             {
                 AdjustmentBars bars = null;
                 bars = CreateBars(() => 
@@ -50,7 +51,11 @@ namespace BaldiTexturePacks
                     page = bars.GetRaw();
                     UpdatePage();
                 }, "PageBar", (originVec + new Vector3(-100f, entriesPerPage * -40f, 0f)), maxPages);
-            }
+            }*/
+            CreateButton(() => { page--; UpdatePage(); }, menuArrowLeft, menuArrowLeftHighlight, "PreviousPage", new Vector3(-40f, entriesPerPage * -40f, 0f));
+            CreateButton(() => { page++; UpdatePage(); }, menuArrowRight, menuArrowRightHighlight, "Next", new Vector3(40f, entriesPerPage * -40f, 0f));
+            pageText = CreateText("PageNumber","1/1", new Vector3(0f, entriesPerPage * -40f, 0f), MTM101BaldAPI.UI.BaldiFonts.ComicSans24, TextAlignmentOptions.Center, new Vector2(80f,48f), Color.black, false);
+            UpdatePage();
         }
 
         void ApplyPacks(bool instant)
@@ -68,8 +73,10 @@ namespace BaldiTexturePacks
                         foundPack.LoadInstantly();
                     }
                 }
+                TexturePacksPlugin.FinalizePackLoading();
                 return;
             }
+            throw new NotImplementedException();
         }
 
         void OnDisable()
@@ -82,6 +89,7 @@ namespace BaldiTexturePacks
 
         public void UpdatePage()
         {
+            page = Mathf.Clamp(page, 0, maxPages);
             for (int i = 0; i < entries.Length; i++)
             {
                 int p = startIndex + i;
@@ -96,6 +104,7 @@ namespace BaldiTexturePacks
                 entry.text.text = pack.metaData.name;
                 entry.toggle.Set(TexturePacksPlugin.packOrder[p].Item2);
             }
+            pageText.text = (page + 1) + "/" + (maxPages + 1);
         }
 
         public void MoveElement(int i, int amount)

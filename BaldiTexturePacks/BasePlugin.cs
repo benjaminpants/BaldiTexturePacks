@@ -375,6 +375,7 @@ namespace BaldiTexturePacks
             handler.AddCategory<PackManagerScreen>("Texture\nPacks");
         }
 
+
         IEnumerator OnLoad()
         {
             yield return 11;
@@ -728,6 +729,7 @@ namespace BaldiTexturePacks
                     foundPack.LoadInstantly();
                 }
             }
+            FinalizePackLoading();
             allPacksReady = true;
             if (packOrderChanged)
             {

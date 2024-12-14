@@ -33,10 +33,8 @@ namespace BaldiTexturePacks.ReplacementSystem
 
         public Replacement[] ReplaceNonGameObject(Component target)
         {
-            TexturePacksPlugin.Log.LogInfo("targ");
-            TexturePacksPlugin.Log.LogInfo(target);
             List<Replacement> undos = new List<Replacement>();
-            if (children.Length > 0) throw new NotImplementedException("Non-Component objects having children is NOT supported atm!");
+            if (children.Length > 0) throw new NotImplementedException("Non-Component objects having children is NOT supported at the moment!");
             object toReplace;
             if (AccessTools.GetFieldNames(target.GetType()).Contains(name))
             {
@@ -46,8 +44,6 @@ namespace BaldiTexturePacks.ReplacementSystem
             {
                 toReplace = AccessTools.Property(target.GetType(), name).GetValue(target);
             }
-            TexturePacksPlugin.Log.LogInfo("replace");
-            TexturePacksPlugin.Log.LogInfo(toReplace);
 
             foreach (KeyValuePair<string, string> replacement in replacements)
             {
@@ -99,7 +95,6 @@ namespace BaldiTexturePacks.ReplacementSystem
                 // if we have a rootObject, we must've been triggered through the children search
                 if (rootObject != null)
                 {
-                    TexturePacksPlugin.Log.LogDebug("We have root object " + rootObject + "!");
                     string regEx = WildCardToRegular(nameParts[1]);
                     for (int i = 0; i < rootObject.transform.childCount; i++)
                     {
@@ -108,7 +103,6 @@ namespace BaldiTexturePacks.ReplacementSystem
                         {
                             Component comp = gamObj.GetComponent(nameParts[0]);
                             if (comp == null) continue;
-                            TexturePacksPlugin.Log.LogInfo("fo:" + nameParts[0]);
                             componentsToApplyReplacementsTo.Add(comp);
                         }
                     }
@@ -130,11 +124,9 @@ namespace BaldiTexturePacks.ReplacementSystem
                 }
             }
 
-            TexturePacksPlugin.Log.LogDebug(componentsToApplyReplacementsTo.Count);
             // now that we have everything we need, apply our replacements
             foreach (KeyValuePair<string, string> replacement in replacements)
             {
-                TexturePacksPlugin.Log.LogDebug(replacement.Key + ":" + replacement.Value);
                 foreach (Component comp in componentsToApplyReplacementsTo)
                 {
                     if (!TexturePacksPlugin.validFieldChanges.ContainsKey(comp.GetType()))
