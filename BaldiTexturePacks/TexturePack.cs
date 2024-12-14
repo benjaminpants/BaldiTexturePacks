@@ -128,7 +128,10 @@ namespace BaldiTexturePacks
                         clipPath = audio[i]
                     });
                 }
-                subtitleOverridePaths = Directory.GetFiles(soundPath, "*.json").ToList();
+                if (flags != PackFlags.Legacy)
+                {
+                    subtitleOverridePaths = Directory.GetFiles(soundPath, "*.json").ToList();
+                }
             }
             if (Directory.Exists(clipsPath))
             {

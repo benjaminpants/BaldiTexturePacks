@@ -720,14 +720,21 @@ namespace BaldiTexturePacks
                 }
             }
             yield return "Loading packs...";
-            for (int i = 0; i < packOrder.Count; i++)
+            try
             {
-                TexturePack foundPack = packs.Find(x => x.internalId == packOrder[i].Item1);
-                if (foundPack == null) continue;
-                if (packOrder[i].Item2)
+                for (int i = 0; i < packOrder.Count; i++)
                 {
-                    foundPack.LoadInstantly();
+                    TexturePack foundPack = packs.Find(x => x.internalId == packOrder[i].Item1);
+                    if (foundPack == null) continue;
+                    if (packOrder[i].Item2)
+                    {
+                        foundPack.LoadInstantly();
+                    }
                 }
+            }
+            catch (Exception E)
+            {
+                MTM101BaldiDevAPI.CauseCrash(this.Info, E);
             }
             FinalizePackLoading();
             allPacksReady = true;

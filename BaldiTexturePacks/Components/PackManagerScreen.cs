@@ -1,6 +1,10 @@
-﻿using MTM101BaldAPI.OptionsAPI;
+﻿using HarmonyLib;
+using MTM101BaldAPI;
+using MTM101BaldAPI.OptionsAPI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -15,6 +19,7 @@ namespace BaldiTexturePacks
         public MenuToggle toggle;
         public StandardMenuButton top;
         public StandardMenuButton bottom;
+        public TexturePack currentPack;
     }
 
     public class PackManagerScreen : CustomOptionsCategory
@@ -41,17 +46,12 @@ namespace BaldiTexturePacks
                 entries[i] = BuildPackMoveButton("Pack" + i, originVec + new Vector3(0f,i * -40f,0f), i);
                 entries[i].gameObject.SetActive(false);
             }
-            CreateApplyButton(() => { ApplyPacks(true); });
+            CreateApplyButton(() => {
+                ApplyPacks(true);
+                SoundObject obj = TexturePacksPlugin.validSoundObjectsForReplacement.First(x => x.name == "NotebookCollect");
+                optionsMenu.GetComponent<AudioManager>().PlaySingle(obj);
+            });
             maxPages = Mathf.FloorToInt((float)(TexturePacksPlugin.packOrder.Count - 1) / entriesPerPage);
-            /*if (maxPages > 0)
-            {
-                AdjustmentBars bars = null;
-                bars = CreateBars(() => 
-                {
-                    page = bars.GetRaw();
-                    UpdatePage();
-                }, "PageBar", (originVec + new Vector3(-100f, entriesPerPage * -40f, 0f)), maxPages);
-            }*/
             CreateButton(() => { page--; UpdatePage(); }, menuArrowLeft, menuArrowLeftHighlight, "PreviousPage", new Vector3(-40f, entriesPerPage * -40f, 0f));
             CreateButton(() => { page++; UpdatePage(); }, menuArrowRight, menuArrowRightHighlight, "Next", new Vector3(40f, entriesPerPage * -40f, 0f));
             pageText = CreateText("PageNumber","1/1", new Vector3(0f, entriesPerPage * -40f, 0f), MTM101BaldAPI.UI.BaldiFonts.ComicSans24, TextAlignmentOptions.Center, new Vector2(80f,48f), Color.black, false);
@@ -64,14 +64,21 @@ namespace BaldiTexturePacks
             if (instant)
             {
                 TexturePacksPlugin.ClearAllModifications(); //revert everything to normal before beginning
-                for (int i = 0; i < TexturePacksPlugin.packOrder.Count; i++)
+                try
                 {
-                    TexturePack foundPack = TexturePacksPlugin.packs.Find(x => x.internalId == TexturePacksPlugin.packOrder[i].Item1);
-                    if (foundPack == null) continue;
-                    if (TexturePacksPlugin.packOrder[i].Item2)
+                    for (int i = 0; i < TexturePacksPlugin.packOrder.Count; i++)
                     {
-                        foundPack.LoadInstantly();
+                        TexturePack foundPack = TexturePacksPlugin.packs.Find(x => x.internalId == TexturePacksPlugin.packOrder[i].Item1);
+                        if (foundPack == null) continue;
+                        if (TexturePacksPlugin.packOrder[i].Item2)
+                        {
+                            foundPack.LoadInstantly();
+                        }
                     }
+                }
+                catch (Exception E)
+                {
+                    MTM101BaldiDevAPI.CauseCrash(TexturePacksPlugin.Instance.Info, E);
                 }
                 TexturePacksPlugin.FinalizePackLoading();
                 return;
@@ -103,6 +110,7 @@ namespace BaldiTexturePacks
                 entry.gameObject.SetActive(true);
                 entry.text.text = pack.metaData.name;
                 entry.toggle.Set(TexturePacksPlugin.packOrder[p].Item2);
+                entry.currentPack = pack;
             }
             pageText.text = (page + 1) + "/" + (maxPages + 1);
         }
@@ -118,16 +126,24 @@ namespace BaldiTexturePacks
             UpdatePage();
         }
 
+        static FieldInfo _hotspot = AccessTools.Field(typeof(MenuToggle), "hotspot");
+
         public PackEntryUI BuildPackMoveButton(string name, Vector3 position, int pos)
         {
+            PackEntryUI ui = new GameObject().AddComponent<PackEntryUI>();
             MenuToggle toggle = CreateToggle("Toggle", "Modded Title Screen", false, Vector3.zero, 250f);
+            StandardMenuButton buttonToAddTipTo = ((GameObject)_hotspot.GetValue(toggle)).GetComponent<StandardMenuButton>();
+            buttonToAddTipTo.eventOnHigh = true;
+            buttonToAddTipTo.OnHighlight.AddListener(() => {
+                tooltipController.UpdateTooltip(ui.currentPack.metaData.description + "\nAuthor: " + ui.currentPack.metaData.author + (ui.currentPack.flags == PackFlags.Legacy ? "\n(Legacy Pack!)" : ""));
+            });
+            buttonToAddTipTo.OffHighlight.AddListener(() => { tooltipController.CloseTooltip(); });
             Destroy(toggle.GetComponentInChildren<TextLocalizer>());
             toggle.GetComponentInChildren<StandardMenuButton>().OnPress.AddListener(() =>
             {
                 (string, bool) packOrd = TexturePacksPlugin.packOrder[startIndex + pos];
                 TexturePacksPlugin.packOrder[startIndex + pos] = (packOrd.Item1, toggle.Value);
             });
-            PackEntryUI ui = new GameObject().AddComponent<PackEntryUI>();
             StandardMenuButton butTop = CreateButton(() => {
                 MoveElement(startIndex + pos, -1);
             }, menuArrowRight, menuArrowRightHighlight, name + "HighlightButtonU", new Vector3(64f,10f,0f));
