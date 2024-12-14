@@ -766,7 +766,7 @@ namespace BaldiTexturePacks
         }
 
         // TEMPORARY
-        // Unwrap cubemap to FADE format, format conversion code based off UniverseLib's implementation
+        // Unwrap cubemap to FADE mapping, format conversion code based off UniverseLib's implementation
         Texture2D CubemapToTexture(Cubemap cubemap)
         {
             Texture2D tex = new Texture2D(cubemap.width * 6, cubemap.height, cubemap.format, false);
@@ -798,7 +798,7 @@ namespace BaldiTexturePacks
             Color[] newPixels = new Color[pixelCount];
             pixelCount--;
 
-            for (int i = 0; i < pixelCount; i++, pixelCount--)
+            for (int i = 0; pixelCount >= 0; i++, pixelCount--)
                 newPixels[i] = pixels[pixelCount];
 
             output.SetPixels(newPixels);
