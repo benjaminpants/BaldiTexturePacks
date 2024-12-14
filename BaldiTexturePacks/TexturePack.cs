@@ -250,16 +250,6 @@ namespace BaldiTexturePacks
                     manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacySeedTextReplacement.json"))
                         .Replace("%", ReplaceNode.FieldToString(legacyOverrides.ElevatorSeedColor.unityColor))));
                 }
-                if (legacyOverrides.DetentionTextColor != compareAgainst.DetentionTextColor)
-                {
-                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyDetentionTextColorReplacement.json"))
-                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.DetentionTextColor.unityColor))));
-                }
-                if (legacyOverrides.UseClassicDetentionText != compareAgainst.UseClassicDetentionText)
-                {
-                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyDetentionEnableClassic.json"))
-                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.UseClassicDetentionText))));
-                }
                 if (legacyOverrides.BSODAShouldRotate != compareAgainst.BSODAShouldRotate)
                 {
                     manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyBSODARotate.json"))
