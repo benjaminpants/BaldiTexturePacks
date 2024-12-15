@@ -11,6 +11,7 @@ namespace BaldiTexturePacks
     {
         SpriteRenderer toCopy;
         SpriteRenderer myRenderer;
+        MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
         string lastSpriteName = "";
         void Awake()
         {
@@ -52,6 +53,8 @@ namespace BaldiTexturePacks
             }
             myRenderer.color = toCopy.color;
             myRenderer.enabled = toCopy.enabled;
+            toCopy.GetPropertyBlock(propertyBlock);
+            myRenderer.SetPropertyBlock(propertyBlock);
         }
     }
 }
