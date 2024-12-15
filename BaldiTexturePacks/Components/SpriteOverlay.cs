@@ -58,7 +58,6 @@ namespace BaldiTexturePacks
             toCopy.GetPropertyBlock(copyPropertyBlock);
             myRenderer.GetPropertyBlock(myPropertyBlock);
 
-
             myPropertyBlock.SetFloat("_SpriteRotation", copyPropertyBlock.GetFloat("_SpriteRotation"));
 
             myRenderer.SetPropertyBlock(myPropertyBlock);
