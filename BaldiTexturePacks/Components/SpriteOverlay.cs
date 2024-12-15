@@ -11,7 +11,8 @@ namespace BaldiTexturePacks
     {
         SpriteRenderer toCopy;
         SpriteRenderer myRenderer;
-        MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+        MaterialPropertyBlock copyPropertyBlock = new MaterialPropertyBlock();
+        MaterialPropertyBlock myPropertyBlock = new MaterialPropertyBlock();
         string lastSpriteName = "";
         void Awake()
         {
@@ -33,6 +34,7 @@ namespace BaldiTexturePacks
             {
                 myRenderer.sprite = toCopy.sprite;
             }
+            myRenderer.GetPropertyBlock(myPropertyBlock);
         }
 
         void Update()
@@ -53,8 +55,13 @@ namespace BaldiTexturePacks
             }
             myRenderer.color = toCopy.color;
             myRenderer.enabled = toCopy.enabled;
-            toCopy.GetPropertyBlock(propertyBlock);
-            myRenderer.SetPropertyBlock(propertyBlock);
+            toCopy.GetPropertyBlock(copyPropertyBlock);
+            myRenderer.GetPropertyBlock(myPropertyBlock);
+
+
+            myPropertyBlock.SetFloat("_SpriteRotation", copyPropertyBlock.GetFloat("_SpriteRotation"));
+
+            myRenderer.SetPropertyBlock(myPropertyBlock);
         }
     }
 }

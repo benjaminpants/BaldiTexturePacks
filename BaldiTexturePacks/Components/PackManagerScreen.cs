@@ -40,6 +40,11 @@ namespace BaldiTexturePacks
 
         public override void Build()
         {
+            if (TexturePacksPlugin.packs.Count == 0)
+            {
+                CreateText("NoPack", "No Texture Packs Installed!", Vector3.zero, MTM101BaldAPI.UI.BaldiFonts.ComicSans24, TextAlignmentOptions.Center, new Vector2(300f,64f), Color.gray, false);
+                return;
+            }
             Vector3 originVec = new Vector3(100f,32f,0f);
             for (int i = 0; i < entries.Length; i++)
             {
