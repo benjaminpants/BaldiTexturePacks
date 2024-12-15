@@ -1,6 +1,7 @@
 ﻿using BaldiTexturePacks.ReplacementSystem;
 using BepInEx;
 using MTM101BaldAPI.AssetTools;
+using MTM101BaldAPI.Reflection;
 using MTM101BaldAPI.Registers;
 using System;
 using System.Collections.Generic;
@@ -59,6 +60,8 @@ namespace BaldiTexturePacks
                 dummyObject.soundClip = overrideData.Key.soundClip; // just incase
                 createdSoundObjectDummies[overrideData.Key] = dummyObject;
             }
+
+            Singleton<LocalizationManager>.Instance.ReflectionInvoke("Start", null);
         }
 
         public static void AddUndo(Replacement toUndo)

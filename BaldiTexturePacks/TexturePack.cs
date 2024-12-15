@@ -298,8 +298,6 @@ namespace BaldiTexturePacks
             {
                 yield return "Reloading Localization...";
                 localizationData = JsonConvert.DeserializeObject<LocalizationData>(File.ReadAllText(localizationPath));
-                // todo: store this via AccessTools
-                Singleton<LocalizationManager>.Instance.ReflectionInvoke("Start", null);
             }
             yield break;
         }

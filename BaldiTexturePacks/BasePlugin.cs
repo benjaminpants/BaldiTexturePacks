@@ -16,6 +16,7 @@ using BaldiTexturePacks.Components;
 using MTM101BaldAPI.OptionsAPI;
 using MTM101BaldAPI.SaveSystem;
 using UnityEngine.UI;
+using MidiPlayerTK;
 
 namespace BaldiTexturePacks
 {
@@ -564,11 +565,11 @@ namespace BaldiTexturePacks
 
                 stb.AppendLine("No audio dumping is currently available.");
                 stb.AppendLine("Below is a list of valid SoundObjects that you can replace(on the left)");
-                stb.AppendLine("And their associated subtitle and subtitle key.");
+                stb.AppendLine("And their associated subtitle, subtitle key, and AudioClip name.");
 
                 foreach (SoundObject sObj in validSoundObjectsForReplacement)
                 {
-                    stb.AppendLine(sObj.name + "->" + Singleton<LocalizationManager>.Instance.GetLocalizedText(sObj.soundKey) + "(" + sObj.soundKey + ")");
+                    stb.AppendLine(sObj.name + "->" + Singleton<LocalizationManager>.Instance.GetLocalizedText(sObj.soundKey) + "(" + sObj.soundKey + ")" + " | " + sObj.soundClip.name);
                 }
 
                 File.WriteAllText(Path.Combine(corePackPath, "SoundObjects", "README.txt"), stb.ToString());
@@ -598,7 +599,27 @@ namespace BaldiTexturePacks
 
                 File.WriteAllText(Path.Combine(corePackPath, "AudioClips", "README.txt"), stb.ToString());
 
-                // spriteswaps 'dump
+                // midi 'dump'
+                if (!Directory.Exists(Path.Combine(corePackPath, "Midi")))
+                {
+                    Directory.CreateDirectory(Path.Combine(corePackPath, "Midi"));
+                }
+
+                stb = new StringBuilder();
+                stb.AppendLine("No midi dumping is currently available.");
+                stb.AppendLine("Below is a list of all valid midi names.");
+
+                for (int i = 0; i < MidiPlayerGlobal.CurrentMidiSet.MidiFiles.Count; i++)
+                {
+                    if (!MidiPlayerGlobal.CurrentMidiSet.MidiFiles[i].StartsWith("custom_"))
+                    {
+                        stb.AppendLine(MidiPlayerGlobal.CurrentMidiSet.MidiFiles[i]);
+                    }
+                }
+
+                File.WriteAllText(Path.Combine(corePackPath, "Midi", "README.txt"), stb.ToString());
+
+                // spriteswaps 'dump'
                 if (!Directory.Exists(Path.Combine(corePackPath, "SpriteSwaps")))
                 {
                     Directory.CreateDirectory(Path.Combine(corePackPath, "SpriteSwaps"));
