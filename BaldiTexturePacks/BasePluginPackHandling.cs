@@ -5,6 +5,7 @@ using MTM101BaldAPI.Reflection;
 using MTM101BaldAPI.Registers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using UnityEngine;
 
@@ -109,13 +110,17 @@ namespace BaldiTexturePacks
     {
         protected bool loaded;
 
-        public AudioClip clip;
+        public AudioClip[] clips;
 
         public string clipPath;
 
         public AudioClip GetClip()
         {
-            return clip;
+            if (clips.Length == 1)
+            {
+                return clips[0];
+            }
+            return clips[UnityEngine.Random.Range(0, clips.Length)];
         }
 
         public void Load()
@@ -124,13 +129,25 @@ namespace BaldiTexturePacks
             {
                 Unload();
             }
-            clip = AssetLoader.AudioClipFromFile(clipPath);
+            List<AudioClip> foundClips = new List<AudioClip>
+            {
+                AssetLoader.AudioClipFromFile(clipPath)
+            };
+            string[] foundAltClips = Directory.GetFiles(Path.GetDirectoryName(clipPath), Path.GetFileNameWithoutExtension(clipPath) + ".*.wav");
+            foreach (string path in foundAltClips)
+            {
+                foundClips.Add(AssetLoader.AudioClipFromFile(path));
+            }
+            clips = foundClips.ToArray();
             loaded = true;
         }
 
         public void Unload()
         {
-            UnityEngine.Object.Destroy(clip);
+            foreach (AudioClip clip in clips)
+            {
+                UnityEngine.Object.Destroy(clip);
+            }
             loaded = false;
         }
     }
