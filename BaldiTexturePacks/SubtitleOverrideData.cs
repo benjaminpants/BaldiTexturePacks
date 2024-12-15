@@ -14,6 +14,6 @@ namespace BaldiTexturePacks
         public string keyOverride = "";
 
         [JsonProperty("TimedKeys")]
-        public SubtitleTimedKey[] timedKeys;
+        public SubtitleTimedKey[] timedKeys = new SubtitleTimedKey[0];
     }
 }

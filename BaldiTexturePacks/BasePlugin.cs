@@ -16,6 +16,7 @@ using BaldiTexturePacks.Components;
 using MTM101BaldAPI.OptionsAPI;
 using MTM101BaldAPI.SaveSystem;
 using UnityEngine.UI;
+using MidiPlayerTK;
 
 namespace BaldiTexturePacks
 {
@@ -280,9 +281,9 @@ namespace BaldiTexturePacks
 
         public static List<Cubemap> validCubemapsForReplacement = new List<Cubemap>();
 
-        string packsPath => Path.Combine(Application.streamingAssetsPath, "Texture Packs");
+        public static string packsPath => Path.Combine(Application.streamingAssetsPath, "Texture Packs");
 
-        string corePackPath => Path.Combine(packsPath, "core");
+        public static string corePackPath => Path.Combine(packsPath, "core");
 
         Dictionary<string, string> LoadAllPackLocalization(Language lang)
         {
@@ -578,11 +579,11 @@ namespace BaldiTexturePacks
 
                 stb.AppendLine("No audio dumping is currently available.");
                 stb.AppendLine("Below is a list of valid SoundObjects that you can replace(on the left)");
-                stb.AppendLine("And their associated subtitle and subtitle key.");
+                stb.AppendLine("And their associated subtitle, subtitle key, and AudioClip name.");
 
                 foreach (SoundObject sObj in validSoundObjectsForReplacement)
                 {
-                    stb.AppendLine(sObj.name + "->" + Singleton<LocalizationManager>.Instance.GetLocalizedText(sObj.soundKey) + "(" + sObj.soundKey + ")");
+                    stb.AppendLine(sObj.name + "->" + Singleton<LocalizationManager>.Instance.GetLocalizedText(sObj.soundKey) + "(" + sObj.soundKey + ")" + " | " + sObj.soundClip.name);
                 }
 
                 File.WriteAllText(Path.Combine(corePackPath, "SoundObjects", "README.txt"), stb.ToString());
@@ -612,7 +613,27 @@ namespace BaldiTexturePacks
 
                 File.WriteAllText(Path.Combine(corePackPath, "AudioClips", "README.txt"), stb.ToString());
 
-                // spriteswaps 'dump
+                // midi 'dump'
+                if (!Directory.Exists(Path.Combine(corePackPath, "Midi")))
+                {
+                    Directory.CreateDirectory(Path.Combine(corePackPath, "Midi"));
+                }
+
+                stb = new StringBuilder();
+                stb.AppendLine("No midi dumping is currently available.");
+                stb.AppendLine("Below is a list of all valid midi names.");
+
+                for (int i = 0; i < MidiPlayerGlobal.CurrentMidiSet.MidiFiles.Count; i++)
+                {
+                    if (!MidiPlayerGlobal.CurrentMidiSet.MidiFiles[i].StartsWith("custom_"))
+                    {
+                        stb.AppendLine(MidiPlayerGlobal.CurrentMidiSet.MidiFiles[i]);
+                    }
+                }
+
+                File.WriteAllText(Path.Combine(corePackPath, "Midi", "README.txt"), stb.ToString());
+
+                // spriteswaps 'dump'
                 if (!Directory.Exists(Path.Combine(corePackPath, "SpriteSwaps")))
                 {
                     Directory.CreateDirectory(Path.Combine(corePackPath, "SpriteSwaps"));
@@ -745,14 +766,21 @@ namespace BaldiTexturePacks
                 }
             }
             yield return "Loading packs...";
-            for (int i = 0; i < packOrder.Count; i++)
+            try
             {
-                TexturePack foundPack = packs.Find(x => x.internalId == packOrder[i].Item1);
-                if (foundPack == null) continue;
-                if (packOrder[i].Item2)
+                for (int i = 0; i < packOrder.Count; i++)
                 {
-                    foundPack.LoadInstantly();
+                    TexturePack foundPack = packs.Find(x => x.internalId == packOrder[i].Item1);
+                    if (foundPack == null) continue;
+                    if (packOrder[i].Item2)
+                    {
+                        foundPack.LoadInstantly();
+                    }
                 }
+            }
+            catch (Exception E)
+            {
+                MTM101BaldiDevAPI.CauseCrash(this.Info, E);
             }
             FinalizePackLoading();
             allPacksReady = true;
