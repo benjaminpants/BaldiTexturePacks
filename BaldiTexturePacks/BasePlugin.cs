@@ -719,8 +719,7 @@ namespace BaldiTexturePacks
                 // Cubemap dumps
                 for (int i = 0; i < allCubemaps.Length; i++)
                 {
-                    Texture2D readableCopy;
-                    readableCopy = CubemapToTexture(allCubemaps[i]);
+                    Texture2D readableCopy = AssetLoader.TextureFromCubemap(allCubemaps[i]);
 
                     File.WriteAllBytes(Path.Combine(cubemapsPath, allCubemaps[i].name + ".png"), readableCopy.EncodeToPNG());
 
@@ -763,49 +762,6 @@ namespace BaldiTexturePacks
             }
             //packOrder.RemoveAll(x => (packs.Where(z => z.internalId == x.Item1).Count() == 0));
             yield break;
-        }
-
-        // TEMPORARY
-        // Unwrap cubemap to FADE mapping, format conversion code based off UniverseLib's implementation
-        Texture2D CubemapToTexture(Cubemap cubemap)
-        {
-            Texture2D tex = new Texture2D(cubemap.width * 6, cubemap.height, cubemap.format, false);
-            for (int i = 5, width = 0; i >= 0; i--, width += cubemap.width)
-            {
-                Graphics.CopyTexture(cubemap, i, 0, 0, 0, cubemap.width, cubemap.height, tex, 0, 0, width, 0);
-            }
-
-            // Convert to ARGB32
-            RenderTexture lastActive = RenderTexture.active;
-
-            RenderTexture dummyTexture = RenderTexture.GetTemporary(tex.width, tex.height, 0, RenderTextureFormat.ARGB32);
-            tex.filterMode = FilterMode.Point;
-            dummyTexture.filterMode = FilterMode.Point;
-            RenderTexture.active = dummyTexture;
-            Graphics.Blit(tex, dummyTexture);
-
-            Texture2D output = new Texture2D(tex.width, tex.height, TextureFormat.ARGB32, false);
-            output.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
-            output.Apply();
-
-            RenderTexture.active = lastActive;
-
-            Destroy(tex);
-
-            // Flip texture 180 degrees
-            Color[] pixels = output.GetPixels();
-            int pixelCount = pixels.Length;
-            Color[] newPixels = new Color[pixelCount];
-            pixelCount--;
-
-            for (int i = 0; pixelCount >= 0; i++, pixelCount--)
-                newPixels[i] = pixels[pixelCount];
-
-            output.SetPixels(newPixels);
-            output.Apply();
-
-            output.name = $"{cubemap.name}_Unwrapped";
-            return output;
         }
     }
 }
