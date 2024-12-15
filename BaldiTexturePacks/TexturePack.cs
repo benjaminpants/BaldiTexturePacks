@@ -74,6 +74,9 @@ namespace BaldiTexturePacks
         public List<string> midiPaths = new List<string>();
         public List<string> loadedMidiIds = new List<string>();
 
+        public Dictionary<Cubemap, string> cubemapReplacementPaths = new Dictionary<Cubemap, string>();
+        public List<Cubemap> createdCubemaps = new List<Cubemap>();
+
         public PackFlags flags
         {
             get
@@ -100,6 +103,7 @@ namespace BaldiTexturePacks
             string clipsPath = Path.Combine(path, "AudioClips");
             string midisPath = Path.Combine(path, "Midi");
             string replacementsPath = Path.Combine(path, "Replacements");
+            string cubemapsPath = Path.Combine(path, "Cubemaps");
             // allow legacy packs to load somewhat
             if (flags == PackFlags.Legacy)
             {
@@ -157,6 +161,16 @@ namespace BaldiTexturePacks
                 {
                     spriteOverlayPaths = Directory.GetFiles(overlaysPath, "*.json").ToList();
                 }
+                if (Directory.Exists(cubemapsPath))
+                {
+                    string[] cubemaps = Directory.GetFiles(cubemapsPath, "*.png");
+                    for (int i = 0; i < cubemaps.Length; i++)
+                    {
+                        Cubemap cubemapToReplace = TexturePacksPlugin.validCubemapsForReplacement.Find(x => x.name == Path.GetFileNameWithoutExtension(cubemaps[i]));
+                        if (cubemapToReplace == null) continue;
+                        cubemapReplacementPaths.Add(cubemapToReplace, cubemaps[i]);
+                    }
+                }
             }
         }
 
@@ -180,11 +194,16 @@ namespace BaldiTexturePacks
             {
                 AssetLoader.UnloadCustomMidi(midiId);
             }
+            foreach (Cubemap cubemap in createdCubemaps)
+            {
+                UnityEngine.Object.Destroy(cubemap);
+            }
             createdClips.Clear();
             manualReplacements.Clear();
             createdSprites.Clear();
             localizationData = null;
             loadedMidiIds.Clear();
+            createdCubemaps.Clear();
         }
 
         public IEnumerator LoadAll()
@@ -222,6 +241,14 @@ namespace BaldiTexturePacks
                 string loadedMidiID = AssetLoader.MidiFromFile(path, Path.GetFileNameWithoutExtension(path) + "_ovr");
                 loadedMidiIds.Add(loadedMidiID);
                 TexturePacksPlugin.currentMidiReplacements[Path.GetFileNameWithoutExtension(path)] = loadedMidiID;
+            }
+            foreach (KeyValuePair<Cubemap, string> replacement in cubemapReplacementPaths)
+            {
+                yield return "Loading: " + replacement.Value;
+                Cubemap cubemap = AssetLoader.CubemapFromFile(replacement.Value);
+                cubemap.name += "_Pack"; //todo: update
+                createdCubemaps.Add(cubemap);
+                TexturePacksPlugin.currentCubemapReplacements[replacement.Key] = cubemap;
             }
 
             if (File.Exists(Path.Combine(path, "Overrides.json")))

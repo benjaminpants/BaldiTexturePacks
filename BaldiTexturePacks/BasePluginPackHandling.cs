@@ -31,6 +31,7 @@ namespace BaldiTexturePacks
 
         public static Dictionary<string, string> currentMidiReplacements = new Dictionary<string, string>();
 
+        public static Dictionary<Cubemap, Cubemap> currentCubemapReplacements = new Dictionary<Cubemap, Cubemap>();
 
         // finalize the pack loading by generating all the dummy SoundObjects we need for subtitle replacements
         public static void FinalizePackLoading()
@@ -80,6 +81,7 @@ namespace BaldiTexturePacks
             currentClipReplacements.Clear();
             currentSpriteReplacements.Clear();
             currentSubtitleOverrides.Clear();
+            currentCubemapReplacements.Clear();
 
             foreach (SoundObject so in createdSoundObjectDummies.Values)
             {
@@ -89,7 +91,7 @@ namespace BaldiTexturePacks
 
             foreach (TexturePack pack in packs)
             {
-                pack.Unload(); //unload all audio clips, sprites, and midis
+                pack.Unload(); //unload all audio clips, sprites, midis and cubemaps
             }
 
             foreach (KeyValuePair<Texture2D, Texture2D> textureToRevert in originalTextures)
