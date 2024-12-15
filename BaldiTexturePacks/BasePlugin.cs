@@ -279,9 +279,9 @@ namespace BaldiTexturePacks
 
         public static List<AudioClip> validClipsForReplacement = new List<AudioClip>();
 
-        string packsPath => Path.Combine(Application.streamingAssetsPath, "Texture Packs");
+        public static string packsPath => Path.Combine(Application.streamingAssetsPath, "Texture Packs");
 
-        string corePackPath => Path.Combine(packsPath, "core");
+        public static string corePackPath => Path.Combine(packsPath, "core");
 
         Dictionary<string, string> LoadAllPackLocalization(Language lang)
         {
