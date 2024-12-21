@@ -19,7 +19,8 @@ namespace BaldiTexturePacks
     public enum PackFlags
     {
         Legacy = 0,
-        TexturesAndSounds = 1
+        TexturesAndSounds = 1,
+        Cubemaps = 2
     }
 
     public class PackMeta
@@ -41,7 +42,7 @@ namespace BaldiTexturePacks
             name = "Unnamed";
             description = "No description.";
             author = "Nobody";
-            versionNumber = 6;
+            versionNumber = 7;
         }
     }
 
@@ -90,6 +91,8 @@ namespace BaldiTexturePacks
                     default:
                     case 6:
                         return PackFlags.TexturesAndSounds;
+                    case 7:
+                        return PackFlags.Cubemaps;
                 }
             }
         }
@@ -161,14 +164,17 @@ namespace BaldiTexturePacks
                 {
                     spriteOverlayPaths = Directory.GetFiles(overlaysPath, "*.json").ToList();
                 }
-                if (Directory.Exists(cubemapsPath))
+                if (flags.HasFlag(PackFlags.Cubemaps))
                 {
-                    string[] cubemaps = Directory.GetFiles(cubemapsPath, "*.png");
-                    for (int i = 0; i < cubemaps.Length; i++)
+                    if (Directory.Exists(cubemapsPath))
                     {
-                        Cubemap cubemapToReplace = TexturePacksPlugin.validCubemapsForReplacement.Find(x => x.name == Path.GetFileNameWithoutExtension(cubemaps[i]));
-                        if (cubemapToReplace == null) continue;
-                        cubemapReplacementPaths.Add(cubemapToReplace, cubemaps[i]);
+                        string[] cubemaps = Directory.GetFiles(cubemapsPath, "*.png");
+                        for (int i = 0; i < cubemaps.Length; i++)
+                        {
+                            Cubemap cubemapToReplace = TexturePacksPlugin.validCubemapsForReplacement.Find(x => x.name == Path.GetFileNameWithoutExtension(cubemaps[i]));
+                            if (cubemapToReplace == null) continue;
+                            cubemapReplacementPaths.Add(cubemapToReplace, cubemaps[i]);
+                        }
                     }
                 }
             }
