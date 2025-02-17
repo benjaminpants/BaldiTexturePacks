@@ -17,6 +17,12 @@ namespace BaldiTexturePacks
         void Awake()
         {
             toCopy = GetComponent<SpriteRenderer>();
+            if (toCopy == null)
+            {
+                Debug.LogError("SpriteOverlay exists without SpriteRenderer? [" + transform.parent.name + "]");
+                Destroy(this);
+                return;
+            }
             toCopy.forceRenderingOff = true; // nothing else uses this (mods should just be using enabled, and bb+ doesn't cull characters.)
             GameObject child = new GameObject("FakeRenderer");
             child.transform.SetParent(transform);

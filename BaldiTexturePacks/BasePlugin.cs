@@ -17,11 +17,12 @@ using MTM101BaldAPI.OptionsAPI;
 using MTM101BaldAPI.SaveSystem;
 using UnityEngine.UI;
 using MidiPlayerTK;
+using BepInEx.Configuration;
 
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.1.0.1")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.1.0.2")]
     public partial class TexturePacksPlugin : BaseUnityPlugin
     {
         public static List<(string, bool)> packOrder = new List<(string, bool)>();
@@ -35,6 +36,8 @@ namespace BaldiTexturePacks
         public static List<TexturePack> packs = new List<TexturePack>();
 
         public static bool allPacksReady = false;
+
+        internal static ConfigEntry<bool> spriteSwapsEnabled;
 
         public static string[] manualExclusions => new string[]
         {
@@ -72,6 +75,7 @@ namespace BaldiTexturePacks
 
         public static SpriteOverlay[] AddOverlaysToTransform(Transform t)
         {
+            if (!spriteSwapsEnabled.Value) return new SpriteOverlay[0];
             List<SpriteOverlay> overlays = new List<SpriteOverlay>();
             SpriteRenderer[] renderers = GetAllIncludingDisabled<SpriteRenderer>(t);
             renderers.Do(x =>
@@ -337,6 +341,7 @@ namespace BaldiTexturePacks
             AddReplacementTarget(gameObject.AddComponent<HardcodedTexturePackReplacements>());
             CustomOptionsCore.OnMenuInitialize += AddCategory;
             ModdedSaveSystem.AddSaveLoadAction(this, SaveHandler);
+            spriteSwapsEnabled = Config.Bind("General", "Sprite Swaps", true, "If set to false, the sprite swap system will be disabled.\nThis WILL break packs, so only enable if SpriteSwaps are causing issues.");
         }
 
         public void SaveHandler(bool isSave, string path)
@@ -563,6 +568,7 @@ namespace BaldiTexturePacks
             Resources.FindObjectsOfTypeAll<Gum>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<TapePlayer>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<HappyBaldi>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<TutorialGameManager>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
 
             yield return "Dumping all other data...";
             // handle all other dumps
@@ -714,7 +720,8 @@ namespace BaldiTexturePacks
                     "Playtime",
                     "TapePlayerClosed",
                     "TapePlayerOpen",
-                    "Phoneog"
+                    "Phoneog",
+                    "Baldi_Talk_Standing_Sheet"
                 };
 
                 List<Sprite> foundSprites = new List<Sprite>();

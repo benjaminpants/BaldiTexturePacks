@@ -81,6 +81,7 @@ namespace BaldiTexturePacks
             currentClipReplacements.Clear();
             currentSpriteReplacements.Clear();
             currentSubtitleOverrides.Clear();
+            currentMidiReplacements.Clear();
             currentCubemapReplacements.Clear();
 
             foreach (SoundObject so in createdSoundObjectDummies.Values)
