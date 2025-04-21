@@ -266,11 +266,6 @@ namespace BaldiTexturePacks
                     manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyFogReplacement.json"))
                         .Replace("%", ReplaceNode.FieldToString(legacyOverrides.FogColor.unityColor))));
                 }
-                if (legacyOverrides.TestFogColor != compareAgainst.TestFogColor)
-                {
-                    manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyTestFogReplacement.json"))
-                        .Replace("%", ReplaceNode.FieldToString(legacyOverrides.TestFogColor.unityColor))));
-                }
                 if (legacyOverrides.UnderwaterColor != compareAgainst.UnderwaterColor)
                 {
                     manualReplacements.Add(JsonConvert.DeserializeObject<ReplaceNode>(File.ReadAllText(Path.Combine(AssetLoader.GetModPath(TexturePacksPlugin.Instance), "LegacyUnderwaterFogReplacement.json"))

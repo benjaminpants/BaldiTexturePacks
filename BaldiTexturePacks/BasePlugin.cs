@@ -22,7 +22,7 @@ using BepInEx.Configuration;
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.1.0.3")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.3.0.0")]
     public partial class TexturePacksPlugin : BaseUnityPlugin
     {
         public static List<(string, bool)> packOrder = new List<(string, bool)>();
@@ -266,13 +266,6 @@ namespace BaldiTexturePacks
                 {
                 "fogColor",
                 }
-            },
-            {
-                typeof(LookAtGuy),
-                new string[]
-                {
-                "fog",
-                }
             }
         };
 
@@ -488,7 +481,15 @@ namespace BaldiTexturePacks
                 Texture2D readableCopy = allTextures[i].MakeReadableCopy(true);
                 if (shouldRegenerateDump)
                 {
-                    File.WriteAllBytes(Path.Combine(texturesPath, allTextures[i].name + ".png"), readableCopy.EncodeToPNG());
+                    try
+                    {
+                        File.WriteAllBytes(Path.Combine(texturesPath, allTextures[i].name + ".png"), readableCopy.EncodeToPNG());
+                    }
+                    catch(Exception E)
+                    {
+                        TexturePacksPlugin.Log.LogError("Can't dump texture: " + allTextures[i].name);
+                        TexturePacksPlugin.Log.LogError(E.ToString());
+                    }
                 }
                 originalTextures.Add(allTextures[i], readableCopy);
             }
@@ -563,6 +564,20 @@ namespace BaldiTexturePacks
             NPCMetaStorage.Instance.All().Where(x => x.info.Metadata.GUID == "mtm101.rulerp.bbplus.baldidevapi").Do(c =>
             {
                 c.prefabs.Do(kvp => AddOverlaysToTransform(kvp.Value.transform));
+            });
+
+            Resources.FindObjectsOfTypeAll<ClickableSpecialFunctionTrigger>().Where(x => x.name.StartsWith("Baldi_Tutorial")).Do(c =>
+            {
+                AddOverlaysToTransform(c.transform);
+            });
+            // handle fieldtrip stuff
+            Resources.FindObjectsOfTypeAll<VolumeAnimator>().Where(x => x.name == "AnimatedTripBaldi").Do(c =>
+            {
+                AddOverlaysToTransform(c.transform);
+            });
+            Resources.FindObjectsOfTypeAll<RendererContainer>().Where(x => x.name == "FirstPrize_SpriteBase").Do(c =>
+            {
+                AddOverlaysToTransform(c.transform);
             });
 
             Resources.FindObjectsOfTypeAll<Gum>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));

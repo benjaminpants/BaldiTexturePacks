@@ -108,7 +108,6 @@ namespace BaldiTexturePacks
         }
     }
 
-    // in the future this will have more features
     public class SoundReplacement
     {
         protected bool loaded;

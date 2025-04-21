@@ -11,6 +11,7 @@ namespace BaldiTexturePacks.Components
         public bool BSODAShouldRotate = true;
         public Color ItemSlotBackgroundColor = Color.white;
         public Color ItemSlotHighlightColor = Color.red;
+        //public string NotebookText = "{0}/{1}";
 
         void Awake()
         {

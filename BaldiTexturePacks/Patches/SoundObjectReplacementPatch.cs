@@ -9,6 +9,7 @@ namespace BaldiTexturePacks.Patches
 
     [HarmonyPatch(typeof(AudioManager))]
     [HarmonyPatch("PlaySingle")]
+    [HarmonyPatch(new Type[] { typeof(SoundObject), typeof(float)})]
     class SoundReplacementPlaySinglePatch
     {
         static void Prefix(SoundObject file, out AudioClip __state)
