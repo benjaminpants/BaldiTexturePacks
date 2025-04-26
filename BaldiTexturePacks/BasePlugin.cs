@@ -487,7 +487,7 @@ namespace BaldiTexturePacks
                     }
                     catch(Exception E)
                     {
-                        TexturePacksPlugin.Log.LogError("Can't dump texture: " + allTextures[i].name);
+                        TexturePacksPlugin.Log.LogError("Can't dump or read texture: " + allTextures[i].name);
                         TexturePacksPlugin.Log.LogError(E.ToString());
                     }
                 }
