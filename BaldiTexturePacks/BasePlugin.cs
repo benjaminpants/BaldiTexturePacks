@@ -22,7 +22,7 @@ using BepInEx.Configuration;
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.2.0.0")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.2.0.1")]
     public partial class TexturePacksPlugin : BaseUnityPlugin
     {
         public static List<(string, bool)> packOrder = new List<(string, bool)>();
@@ -326,7 +326,7 @@ namespace BaldiTexturePacks
         void Awake()
         {
             Harmony harmony = new Harmony("mtm101.rulerp.baldiplus.texturepacks");
-            LoadingEvents.RegisterOnAssetsLoaded(this.Info, OnLoad(), true);
+            LoadingEvents.RegisterOnAssetsLoaded(this.Info, OnLoad(), LoadingEventOrder.Final);
             harmony.PatchAllConditionals();
             Log = this.Logger;
             Instance = this;
