@@ -604,6 +604,9 @@ namespace BaldiTexturePacks
             Resources.FindObjectsOfTypeAll<TapePlayer>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<HappyBaldi>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<TutorialGameManager>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<BalloonBuster>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<BalloonBusterBalloon>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<MatchActivityBalloon>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
 
             yield return "Dumping all other data...";
             // handle all other dumps
@@ -756,7 +759,10 @@ namespace BaldiTexturePacks
                     "TapePlayerClosed",
                     "TapePlayerOpen",
                     "Phoneog",
-                    "Baldi_Talk_Standing_Sheet"
+                    "Baldi_Talk_Standing_Sheet",
+                    "BalloonBuster_Pulley_Sprite",
+                    "BalloonBuster_Balloons_Sheet",
+                    "MatchBalloon_Sheet"
                 };
 
                 List<Sprite> foundSprites = new List<Sprite>();
