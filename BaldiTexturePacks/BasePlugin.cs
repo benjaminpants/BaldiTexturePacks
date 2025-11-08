@@ -18,6 +18,7 @@ using MTM101BaldAPI.SaveSystem;
 using UnityEngine.UI;
 using MidiPlayerTK;
 using BepInEx.Configuration;
+using System.Security.Cryptography.X509Certificates;
 
 namespace BaldiTexturePacks
 {
@@ -384,6 +385,26 @@ namespace BaldiTexturePacks
             AddManualReplacementTargetsFromResources<MathMachine>().Do(x =>
             {
                 validMovableComponents.AddRange(x.GetComponentsInChildren<TMP_Text>().Select(z => (Component)z.transform));
+            });
+            AddManualReplacementTargetsFromResources<BalloonBuster>().Do(x =>
+            {
+                if (x.transform.Find("PulleySprite"))
+                {
+                    validMovableComponents.Add(x.transform.Find("PulleySprite").GetComponent<SpriteRenderer>());
+                }
+
+                if (x.transform.Find("Billboard"))
+                {
+                    validMovableComponents.AddRange(x.transform.Find("Billboard").GetComponentsInChildren<TMP_Text>().Select(z => (Component)z.transform));
+                }
+            });
+            AddManualReplacementTargetsFromResources<BalloonBusterBalloon>().Do(x =>
+            {
+                validMovableComponents.AddRange(x.transform.Find("RendererBase").GetComponentsInChildren<SpriteRenderer>());
+            });
+            AddManualReplacementTargetsFromResources<MatchActivityBalloon>().Do(x =>
+            {
+                validMovableComponents.AddRange(x.transform.Find("RendererBase").GetComponentsInChildren<SpriteRenderer>());
             });
             AddManualReplacementTargetsFromResources<FloodEvent>();
             AddManualReplacementTargetsFromResources<FogEvent>();
