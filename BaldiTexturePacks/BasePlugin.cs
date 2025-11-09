@@ -385,6 +385,26 @@ namespace BaldiTexturePacks
             {
                 validMovableComponents.AddRange(x.GetComponentsInChildren<TMP_Text>().Select(z => (Component)z.transform));
             });
+            AddManualReplacementTargetsFromResources<BalloonBuster>().Do(x =>
+            {
+                if (x.transform.Find("PulleySprite"))
+                {
+                    validMovableComponents.Add(x.transform.Find("PulleySprite").GetComponent<SpriteRenderer>());
+                }
+
+                if (x.transform.Find("Billboard"))
+                {
+                    validMovableComponents.AddRange(x.transform.Find("Billboard").GetComponentsInChildren<TMP_Text>().Select(z => (Component)z.transform));
+                }
+            });
+            AddManualReplacementTargetsFromResources<BalloonBusterBalloon>().Do(x =>
+            {
+                validMovableComponents.AddRange(x.transform.Find("RendererBase").GetComponentsInChildren<SpriteRenderer>());
+            });
+            AddManualReplacementTargetsFromResources<MatchActivityBalloon>().Do(x =>
+            {
+                validMovableComponents.AddRange(x.transform.Find("RendererBase").GetComponentsInChildren<SpriteRenderer>());
+            });
             AddManualReplacementTargetsFromResources<FloodEvent>();
             AddManualReplacementTargetsFromResources<FogEvent>();
             AddManualReplacementTargetsFromResources<HudManager>().Do(x => AddAllChildrenToMovables(x.transform));
@@ -584,6 +604,9 @@ namespace BaldiTexturePacks
             Resources.FindObjectsOfTypeAll<TapePlayer>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<HappyBaldi>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<TutorialGameManager>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<BalloonBuster>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<BalloonBusterBalloon>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<MatchActivityBalloon>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
 
             yield return "Dumping all other data...";
             // handle all other dumps
@@ -736,7 +759,10 @@ namespace BaldiTexturePacks
                     "TapePlayerClosed",
                     "TapePlayerOpen",
                     "Phoneog",
-                    "Baldi_Talk_Standing_Sheet"
+                    "Baldi_Talk_Standing_Sheet",
+                    "BalloonBuster_Pulley_Sprite",
+                    "BalloonBuster_Balloons_Sheet",
+                    "MatchBalloon_Sheet"
                 };
 
                 List<Sprite> foundSprites = new List<Sprite>();
