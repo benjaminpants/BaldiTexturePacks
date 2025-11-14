@@ -22,7 +22,7 @@ using BepInEx.Configuration;
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.2.0.2")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.3.0.0")]
     public partial class TexturePacksPlugin : BaseUnityPlugin
     {
         public static List<(string, bool)> packOrder = new List<(string, bool)>();
@@ -607,6 +607,7 @@ namespace BaldiTexturePacks
             Resources.FindObjectsOfTypeAll<BalloonBuster>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<BalloonBusterBalloon>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<MatchActivityBalloon>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<PacketOMatic>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
 
             yield return "Dumping all other data...";
             // handle all other dumps
@@ -762,7 +763,8 @@ namespace BaldiTexturePacks
                     "Baldi_Talk_Standing_Sheet",
                     "BalloonBuster_Pulley_Sprite",
                     "BalloonBuster_Balloons_Sheet",
-                    "MatchBalloon_Sheet"
+                    "MatchBalloon_Sheet",
+                    "PacketOMatic_Sheet_0"
                 };
 
                 List<Sprite> foundSprites = new List<Sprite>();
