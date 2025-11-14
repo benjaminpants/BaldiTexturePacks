@@ -327,6 +327,7 @@ namespace BaldiTexturePacks
         {
             Harmony harmony = new Harmony("mtm101.rulerp.baldiplus.texturepacks");
             LoadingEvents.RegisterOnAssetsLoaded(this.Info, OnLoad(), LoadingEventOrder.Final);
+            spriteSwapsEnabled = Config.Bind("General", "Sprite Swaps", true, "If set to false, the sprite swap system will be disabled.\nThis WILL break packs, so only enable if SpriteSwaps are causing issues.");
             harmony.PatchAllConditionals();
             Log = this.Logger;
             Instance = this;
@@ -334,7 +335,6 @@ namespace BaldiTexturePacks
             AddReplacementTarget(gameObject.AddComponent<HardcodedTexturePackReplacements>());
             CustomOptionsCore.OnMenuInitialize += AddCategory;
             ModdedSaveSystem.AddSaveLoadAction(this, SaveHandler);
-            spriteSwapsEnabled = Config.Bind("General", "Sprite Swaps", true, "If set to false, the sprite swap system will be disabled.\nThis WILL break packs, so only enable if SpriteSwaps are causing issues.");
         }
 
         public void SaveHandler(bool isSave, string path)
