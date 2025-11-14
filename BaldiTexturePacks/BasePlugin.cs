@@ -18,11 +18,12 @@ using MTM101BaldAPI.SaveSystem;
 using UnityEngine.UI;
 using MidiPlayerTK;
 using BepInEx.Configuration;
+using System.Reflection;
 
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.2.0.1")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.2.0.2")]
     public partial class TexturePacksPlugin : BaseUnityPlugin
     {
         public static List<(string, bool)> packOrder = new List<(string, bool)>();
@@ -327,6 +328,7 @@ namespace BaldiTexturePacks
         {
             Harmony harmony = new Harmony("mtm101.rulerp.baldiplus.texturepacks");
             LoadingEvents.RegisterOnAssetsLoaded(this.Info, OnLoad(), LoadingEventOrder.Final);
+            spriteSwapsEnabled = Config.Bind("General", "Sprite Swaps", true, "If set to false, the sprite swap system will be disabled.\nThis WILL break packs, so only enable if SpriteSwaps are causing issues.");
             harmony.PatchAllConditionals();
             Log = this.Logger;
             Instance = this;
@@ -334,7 +336,6 @@ namespace BaldiTexturePacks
             AddReplacementTarget(gameObject.AddComponent<HardcodedTexturePackReplacements>());
             CustomOptionsCore.OnMenuInitialize += AddCategory;
             ModdedSaveSystem.AddSaveLoadAction(this, SaveHandler);
-            spriteSwapsEnabled = Config.Bind("General", "Sprite Swaps", true, "If set to false, the sprite swap system will be disabled.\nThis WILL break packs, so only enable if SpriteSwaps are causing issues.");
         }
 
         public void SaveHandler(bool isSave, string path)
