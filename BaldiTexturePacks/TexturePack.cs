@@ -13,6 +13,8 @@ using System.Text;
 using UnityEngine;
 using BaldiTexturePacks.Legacy;
 
+using System.Runtime;
+
 namespace BaldiTexturePacks
 {
 
@@ -36,7 +38,6 @@ namespace BaldiTexturePacks
 
         [JsonProperty("Version")]
         public int versionNumber;
-
         public PackMeta()
         {
             name = "Unnamed";
@@ -100,6 +101,7 @@ namespace BaldiTexturePacks
         public TexturePack(string path)
         {
             metaData = JsonConvert.DeserializeObject<PackMeta>(File.ReadAllText(Path.Combine(path, "pack.json")));
+
             _path = path;
             string texturesPath = Path.Combine(path, "Textures");
             string soundPath = Path.Combine(path, "SoundObjects");
@@ -327,6 +329,7 @@ namespace BaldiTexturePacks
                 yield return "Reloading Localization...";
                 localizationData = JsonConvert.DeserializeObject<LocalizationData>(File.ReadAllText(localizationPath));
             }
+
             yield break;
         }
     }

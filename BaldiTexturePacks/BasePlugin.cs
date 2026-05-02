@@ -381,6 +381,7 @@ namespace BaldiTexturePacks
         {
             yield return 11;
             yield return "Getting base objects...";
+            // Activities
             AddManualReplacementTargetsFromResources<MathMachine>().Do(x =>
             {
                 validMovableComponents.AddRange(x.GetComponentsInChildren<TMP_Text>().Select(z => (Component)z.transform));
@@ -405,23 +406,24 @@ namespace BaldiTexturePacks
             {
                 validMovableComponents.AddRange(x.transform.Find("RendererBase").GetComponentsInChildren<SpriteRenderer>());
             });
+            // Events
             AddManualReplacementTargetsFromResources<FloodEvent>();
             AddManualReplacementTargetsFromResources<FogEvent>();
-            AddManualReplacementTargetsFromResources<HudManager>().Do(x => AddAllChildrenToMovables(x.transform));
-            AddManualReplacementTargetsFromResources<LookAtGuy>();
-            AddManualReplacementTargetsFromResources<DigitalClock>().Do(x =>
+            // Field Trip(s)
+            AddManualReplacementTargetsFromResources<RendererContainer>().Do(x =>
             {
-                validMovableComponents.AddRange(x.GetComponentsInChildren<SpriteRenderer>());
-                validMovableComponents.AddRange(x.GetComponentsInChildren<Image>());
-            });
-            AddManualReplacementTargetsFromResources<ElevatorScreen>().Do(x => AddAllChildrenToMovables(x.transform));
-            AddManualReplacementTargetsFromResources<Item>().Do(x =>
-            {
-                if (x.transform.Find("RendererBase"))
+                if (x.name == "PineTree_Bully")
                 {
-                    validMovableComponents.Add(x.transform.Find("RendererBase").GetComponentInChildren<SpriteRenderer>());
+                    validMovableComponents.AddRange(x.transform.Find("Sprite").GetComponentsInChildren<SpriteRenderer>());
+                }
+                else if (x.name == "CampFire(Clone)")
+                {
+                    validMovableComponents.AddRange(x.transform.Find("Sprite").GetComponentsInChildren<SpriteRenderer>());
                 }
             });
+            // UI
+            AddManualReplacementTargetsFromResources<HudManager>().Do(x => AddAllChildrenToMovables(x.transform));
+            AddManualReplacementTargetsFromResources<ElevatorScreen>().Do(x => AddAllChildrenToMovables(x.transform));
             AddManualReplacementTargetsFromResources<BaldiBG>().Do(x =>
             {
                 AddAllChildrenToMovables(x.transform);
@@ -430,6 +432,28 @@ namespace BaldiTexturePacks
                     AddReplacementTarget(x.GetComponent<CursorInitiator>());
                 }
             });
+            // Misc.
+            AddManualReplacementTargetsFromResources<LookAtGuy>();
+            AddManualReplacementTargetsFromResources<DigitalClock>().Do(x =>
+            {
+                validMovableComponents.AddRange(x.GetComponentsInChildren<SpriteRenderer>());
+                validMovableComponents.AddRange(x.GetComponentsInChildren<Image>());
+            });
+            AddManualReplacementTargetsFromResources<Item>().Do(x =>
+            {
+                if (x.transform.Find("RendererBase"))
+                {
+                    validMovableComponents.Add(x.transform.Find("RendererBase").GetComponentInChildren<SpriteRenderer>());
+                }
+            });
+            AddManualReplacementTargetsFromResources<Animator>().Do(x =>
+            {
+                if (x.name.StartsWith("ActivityExteriorSign_"))
+                {
+                    validMovableComponents.Add(x.transform.Find("SignBase").GetComponentInChildren<SpriteRenderer>());
+                }
+            });
+            AddManualReplacementTargetsFromResources<Balloon>();
             baseElevatorScreen = Resources.FindObjectsOfTypeAll<ElevatorScreen>().First(x => x.GetInstanceID() >= 0 && x.gameObject.scene.name == null);
             yield return "Setting up file structures...";
             if (!Directory.Exists(packsPath))
@@ -590,6 +614,10 @@ namespace BaldiTexturePacks
             {
                 AddOverlaysToTransform(c.transform);
             });
+            Resources.FindObjectsOfTypeAll<Animator>().Where(x => x.name.StartsWith("ActivityExteriorSign_")).Do(c =>
+            {
+                AddOverlaysToTransform(c.transform);
+            });
             // handle fieldtrip stuff
             Resources.FindObjectsOfTypeAll<VolumeAnimator>().Where(x => x.name == "AnimatedTripBaldi").Do(c =>
             {
@@ -599,12 +627,21 @@ namespace BaldiTexturePacks
             {
                 AddOverlaysToTransform(c.transform);
             });
+            Resources.FindObjectsOfTypeAll<RendererContainer>().Where(x => x.name == "PineTree_Bully").Do(c =>
+            {
+                AddOverlaysToTransform(c.transform);
+            });
+            Resources.FindObjectsOfTypeAll<RendererContainer>().Where(x => x.name == "CampFire(Clone)").Do(c =>
+            {
+                AddOverlaysToTransform(c.transform);
+            });
 
             Resources.FindObjectsOfTypeAll<Gum>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<TapePlayer>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<HappyBaldi>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<TutorialGameManager>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<BalloonBuster>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
+            Resources.FindObjectsOfTypeAll<Balloon>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<BalloonBusterBalloon>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<MatchActivityBalloon>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
             Resources.FindObjectsOfTypeAll<PacketOMatic>().Where(x => x.GetInstanceID() >= 0).Do(x => AddOverlaysToTransform(x.transform));
