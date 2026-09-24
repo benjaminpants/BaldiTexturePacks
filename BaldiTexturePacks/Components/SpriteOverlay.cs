@@ -66,6 +66,8 @@ namespace BaldiTexturePacks
 
             myPropertyBlock.SetFloat("_SpriteRotation", copyPropertyBlock.GetFloat("_SpriteRotation"));
 
+            myPropertyBlock.SetFloat("_PercentInvisible", copyPropertyBlock.GetFloat("_PercentInvisible"));
+
             myRenderer.SetPropertyBlock(myPropertyBlock);
         }
     }
