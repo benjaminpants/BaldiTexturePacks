@@ -11,6 +11,7 @@ namespace BaldiTexturePacks
     {
         SpriteRenderer toCopy;
         SpriteRenderer myRenderer;
+        MaterialPropertyBlock myPropertyBlock = new MaterialPropertyBlock();
         MaterialPropertyBlock copyPropertyBlock = new MaterialPropertyBlock();
         string lastSpriteName = "";
         void Awake()
@@ -31,6 +32,8 @@ namespace BaldiTexturePacks
             child.layer = LayerMask.NameToLayer("Billboard");
             myRenderer = child.AddComponent<SpriteRenderer>();
             myRenderer.material = toCopy.material;
+            toCopy.GetPropertyBlock(copyPropertyBlock);
+            myRenderer.SetPropertyBlock(copyPropertyBlock);
             if (TexturePacksPlugin.currentSpriteReplacements.ContainsKey(toCopy.sprite.name))
             {
                 myRenderer.sprite = TexturePacksPlugin.currentSpriteReplacements[toCopy.sprite.name];
@@ -45,6 +48,11 @@ namespace BaldiTexturePacks
         {
             myRenderer.flipX = toCopy.flipX;
             myRenderer.flipY = toCopy.flipY;
+            myRenderer.GetPropertyBlock(myPropertyBlock);
+            toCopy.GetPropertyBlock(copyPropertyBlock);
+            myPropertyBlock.SetFloat("_PercentInvisible", copyPropertyBlock.GetFloat("_PercentInvisible"));
+            myPropertyBlock.SetFloat("_SpriteRotation", copyPropertyBlock.GetFloat("_SpriteRotation"));
+            myRenderer.SetPropertyBlock(myPropertyBlock);
             if (toCopy.sprite.name != lastSpriteName)
             {
                 if (TexturePacksPlugin.currentSpriteReplacements.ContainsKey(toCopy.sprite.name))
@@ -59,8 +67,6 @@ namespace BaldiTexturePacks
             }
             myRenderer.color = toCopy.color;
             myRenderer.enabled = toCopy.enabled;
-            toCopy.GetPropertyBlock(copyPropertyBlock);
-            myRenderer.SetPropertyBlock(copyPropertyBlock);
         }
     }
 }

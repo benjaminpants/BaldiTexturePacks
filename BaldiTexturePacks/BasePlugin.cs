@@ -22,7 +22,7 @@ using BepInEx.Configuration;
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.3.0.2")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.3.0.3")]
     public partial class TexturePacksPlugin : BaseUnityPlugin
     {
         public static List<(string, bool)> packOrder = new List<(string, bool)>();
@@ -768,7 +768,8 @@ namespace BaldiTexturePacks
                     "BalloonBuster_Pulley_Sprite",
                     "BalloonBuster_Balloons_Sheet",
                     "MatchBalloon_Sheet",
-                    "PacketOMatic_Sheet_0"
+                    "PacketOMatic_Sheet_0",
+                    "NotebookAnim_Sheet_Readable"
                 };
 
                 List<Sprite> foundSprites = new List<Sprite>();
