@@ -20,7 +20,8 @@ namespace BaldiTexturePacks
     {
         Legacy = 0,
         TexturesAndSounds = 1,
-        Cubemaps = 2
+        Cubemaps = 2,
+        Internal = 65536
     }
 
     public class PackMeta
@@ -82,6 +83,10 @@ namespace BaldiTexturePacks
         {
             get
             {
+                if (metaData.versionNumber == int.MinValue)
+                {
+                    return PackFlags.Cubemaps | PackFlags.TexturesAndSounds | PackFlags.Internal;
+                }
                 if (metaData.versionNumber <= 5)
                 {
                     return PackFlags.Legacy; // legacy pack
@@ -115,6 +120,10 @@ namespace BaldiTexturePacks
             }
             if (Directory.Exists(texturesPath))
             {
+                if (File.Exists(Path.Combine(texturesPath, "_AREADME.txt")))
+                {
+                    throw new Exception("Do not copy the entire core folder for your texture pack!\nTo hide this error, delete _AREADME.txt!");
+                }
                 string[] textures = Directory.GetFiles(texturesPath, "*.png");
                 for (int i = 0; i < textures.Length; i++)
                 {
@@ -185,7 +194,7 @@ namespace BaldiTexturePacks
             LoadAll().MoveUntilDone();
         }
 
-        public void Unload()
+        public virtual void Unload()
         {
             foreach (AudioClip clip in createdClips)
             {
@@ -212,7 +221,7 @@ namespace BaldiTexturePacks
             createdCubemaps.Clear();
         }
 
-        public IEnumerator LoadAll()
+        public virtual IEnumerator LoadAll()
         {
             Unload();
             foreach (KeyValuePair<Texture2D, string> toReplacePath in texturesToReplacementsPaths)

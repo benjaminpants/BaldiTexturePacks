@@ -22,7 +22,7 @@ using BepInEx.Configuration;
 namespace BaldiTexturePacks
 {
     [BepInDependency("mtm101.rulerp.bbplus.baldidevapi")]
-    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.3.0.1")]
+    [BepInPlugin("mtm101.rulerp.baldiplus.texturepacks", "Texture Packs", "3.3.0.2")]
     public partial class TexturePacksPlugin : BaseUnityPlugin
     {
         public static List<(string, bool)> packOrder = new List<(string, bool)>();
@@ -444,6 +444,10 @@ namespace BaldiTexturePacks
             if (!Directory.Exists(texturesPath))
             {
                 Directory.CreateDirectory(texturesPath);
+            }
+            if (!File.Exists(Path.Combine(texturesPath, "_AREADME.txt")))
+            {
+                File.WriteAllText(Path.Combine(texturesPath, "_AREADME.txt"), "DONT COPY THIS FOLDER IN ITS ENTIRITY TO MAKE YOUR TEXTURE PACK!\r\nDONT COPY THIS FOLDER IN ITS ENTIRITY TO MAKE YOUR TEXTURE PACK!\r\nDONT COPY THIS FOLDER IN ITS ENTIRITY TO MAKE YOUR TEXTURE PACK!\r\nONLY COPY THE TEXTURES YOU PLAN ON CHANGING!\r\nAND NO, YOU WILL NOT BE CHANGING \"EVERY TEXTURE\"! DO NOT COPY THIS FOLDER INTO YOUR PACK!");
             }
             string cubemapsPath = Path.Combine(corePackPath, "Cubemaps");
             if (!Directory.Exists(cubemapsPath))
